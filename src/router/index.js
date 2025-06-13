@@ -22,11 +22,18 @@ const routes = [
       path: '/logout',
       name: 'Logout',
       component: () => import('../views/LogoutView.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/characters',
       name: 'Characters',
       component: () => import('../views/CharactersView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/characters/create',
+      name: 'CharacterCreation',
+      component: () => import('../views/CharactersCreationView.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -94,7 +101,82 @@ const routes = [
     {
       path: '/campaigns',
       name: 'Campaigns',
-      component: () => import('../views/CampaignsView.vue')
+      component: () => import('../views/CampaignsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/campaigns/create',
+      name: 'CampaignCreation',
+      component: () => import('../views/CampaignCreationView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/campaigns/:id',
+      name: 'CampaignDetails',
+      component: () => import('../views/CampaignDetailsView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/campaigns/:id/edit',
+      name: 'CampaignUpdate',
+      component: () => import('../views/CampaignDetailsUpdateView.vue'),
+      meta: { requiresAuth: true }
+    },
+
+    // Admin routes
+    {
+      path: '/features',
+      name: 'Features',
+      component: () => import('../views/FeaturesView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/features/:id',
+      name: 'FeatureDetails',
+      component: () => import('../views/FeatureDetailsView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/features/create',
+      name: 'FeatureCreation',
+      component: () => import('../views/FeatureCreationView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/features/:id/edit',
+      name: 'FeatureUpdate',
+      component: () => import('../views/FeatureUpdateView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/classes/create',
+      name: 'ClassCreation',
+      component: () => import('../views/ClassesCreationView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/classes/:id/edit',
+      name: 'ClassUpdate',
+      component: () => import('../views/ClassUpdateView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/subclasses/:id/edit',
+      name: 'SubclassUpdate',
+      component: () => import('../views/SubclassUpdateView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/equipment/create',
+      name: 'EquipmentCreation',
+      component: () => import('../views/EquipmentCreationView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
+    },
+    {
+      path: '/equipment/:id/edit',
+      name: 'EquipmentUpdate',
+      component: () => import('../views/EquipmentUpdateView.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true }
     },
 
     // Catch-all route for 404 Not Found
@@ -138,7 +220,7 @@ router.beforeEach(async (to, from, next) => {
   if (requiresAuth && !authStore.token) {
     // If route requires auth and user is not authenticated
     next('/login')
-  } else if (requiresAdmin && (!authStore.user || authStore.user.role !== 'admin')) {
+  } else if (requiresAdmin && (!authStore.user || authStore.user.role !== "admin")) {
     // If route requires admin and user is not admin
     next('/')
   } else {

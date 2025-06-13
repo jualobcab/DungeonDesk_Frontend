@@ -39,21 +39,24 @@ onMounted(async () => {
       </div>
     </header>
 
-    <div class="container mx-auto px-4 py-6 flex gap-6">
-      <nav class="w-64 space-y-2">
+    <div class="container mx-auto px-4 py-6 flex flex-col md:flex-row gap-6">
+      <nav class="md:w-64 md:space-y-2 md:flex-col flex-row md:space-x-0 space-x-4">
         <RouterLink 
           v-for="(link, index) in [
             { to: '/equipment', text: 'Equipment', icon: '🗡️' },
             { to: '/classes', text: 'Classes', icon: '📚' },
             ...((!authStore.isAuthLoading && authStore.user) ? [
               { to: '/characters', text: 'Characters', icon: '🧙‍♂️' },
-              { to: '/campaigns', text: 'Campaigns', icon: '🏰' }
+              { to: '/campaigns', text: 'Campaigns', icon: '🏰' },
+              ...(!!authStore.user?.is_admin ? [
+                { to: '/features', text: 'Features', icon: '✨' }
+              ] : [])
             ] : [])
           ]" 
           :key="index"
           :to="link.to" 
           class="block px-4 py-3 rounded-lg bg-gray-800 hover:bg-gray-700 border border-amber-900/20 
-                 transition-colors duration-200 text-amber-500 hover:text-amber-400"
+                transition-colors duration-200 text-amber-500 hover:text-amber-400"
         >
           <span class="flex items-center gap-2">
             <span>{{ link.icon }}</span>

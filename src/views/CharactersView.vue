@@ -31,6 +31,30 @@
       </RouterLink>
     </div>
 
+    <!-- Botón para añadir personaje -->
+    <div v-if="characters.length > 0" class="flex justify-center mt-8">
+      <RouterLink
+        to="/characters/create"
+        class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold shadow transition"
+      >
+        Añadir personaje
+      </RouterLink>
+    </div>
+
+    <!-- MENSAJE SI NO HAY PERSONAJES -->
+    <div v-if="characters.length === 0" class="flex flex-col items-center mt-12">
+      <p class="text-lg text-gray-200 mb-4 text-center">
+        Todavía no tienes ningún personaje creado.<br>
+        ¡Puedes crear uno fácilmente!
+      </p>
+      <RouterLink
+        to="/characters/create"
+        class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold shadow transition"
+      >
+        Crear personaje
+      </RouterLink>
+    </div>
+
     <!-- Modal de confirmación de borrado -->
     <div
       v-if="showDeleteModal"

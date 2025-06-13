@@ -43,7 +43,7 @@
           @click="showLevelUpModal = true"
           title="Subir de nivel"
         >
-          <span>Level Up</span>
+          Level Up
           <span>⏫</span>
         </button>
       </div>
@@ -583,6 +583,7 @@
   onMounted(async () => {
     try {
       const res = await characterService.getOne(route.params.id)
+      // Si no existe el personaje, redirige a /characters
       if (!res.data || !res.data.id_character) {
         router.push('/characters')
         return
@@ -609,6 +610,7 @@
       const classRes = await classService.getAll()
       allClasses.value = classRes.data
     } catch (error) {
+      // Si hay error, redirige a /characters
       router.push('/characters')
     }
   })

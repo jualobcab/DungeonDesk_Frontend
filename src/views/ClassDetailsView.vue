@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-3xl mx-auto">
-    <!-- Icono y título -->
-    <div class="flex flex-col items-center mb-6">
+    <!-- Icono, título y botón de borrar (solo admin) -->
+    <div class="flex flex-col items-center mb-6 relative">
       <img
         :src="getClassImage(classData.name)"
         :alt="classData.name"
@@ -10,6 +10,29 @@
         v-if="classData.name"
       />
       <h1 class="text-3xl font-medieval text-amber-500 font-bold mb-2">{{ classData.name }}</h1>
+      <div v-if="authStore.user && authStore.user.is_admin" class="absolute top-0 right-0 flex gap-2 z-10">
+        <!-- Botón editar -->
+        <button
+          class="bg-green-700 hover:bg-green-600 text-white rounded-full px-4 py-2 flex items-center gap-2 font-bold shadow transition"
+          @click="editClass"
+          title="Edit class"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" />
+          </svg>
+          Edit
+        </button>
+        <!-- Botón borrar -->
+        <button
+          class="bg-red-900 hover:bg-red-700 text-gray-100 rounded-full p-2 transition"
+          @click="showDeleteModal = true"
+          title="Delete class"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Descripción y nivel de subclase -->
@@ -53,43 +76,90 @@
         </li>
       </ul>
     </div>
+
+    <!-- Modal de confirmación de borrado -->
+    <div
+      v-if="showDeleteModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60"
+    >
+      <div class="bg-gray-900 border border-amber-900/40 rounded-lg p-8 max-w-sm w-full shadow-xl flex flex-col items-center">
+        <p class="text-lg text-gray-100 mb-6 text-center">
+          Are you sure you want to delete the class
+          <span class="text-amber-400 font-bold">{{ classData.name }}</span>?
+        </p>
+        <div class="flex gap-4">
+          <button
+            class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg font-bold"
+            @click="confirmDelete"
+          >
+            Yes, delete
+          </button>
+          <button
+            class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg"
+            @click="showDeleteModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue'
-    import { useRoute } from 'vue-router'
-    import { classService } from '@/services/api'
+  import { ref, onMounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { classService, adminService } from '@/services/api'
+  import { useAuthStore } from '@/stores/auth'
 
-    const route = useRoute()
-    const classId = route.params.id
+  const route = useRoute()
+  const router = useRouter()
+  const classId = route.params.id
 
-    const classData = ref({})
-    const subclasses = ref([])
-    const features = ref([])
+  const classData = ref({})
+  const subclasses = ref([])
+  const features = ref([])
 
-    const getClassImage = (name) => {
+  const showDeleteModal = ref(false)
+  const authStore = useAuthStore()
+
+  const getClassImage = (name) => {
     if (!name) return ''
-        const fileName = name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')
-        return new URL(`../assets/img/classIcons/${fileName}.jpeg`, import.meta.url).href
+    const fileName = name.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '')
+    return new URL(`../assets/img/classIcons/${fileName}.jpeg`, import.meta.url).href
+  }
+
+  const onImgError = (event) => {
+    event.target.src = new URL('../assets/img/classIcons/default.jpeg', import.meta.url).href
+  }
+
+  const confirmDelete = async () => {
+    try {
+      await adminService.deleteClass(classId)
+      showDeleteModal.value = false
+      router.push('/classes')
+    } catch (error) {
+      alert('Error deleting the class')
+      showDeleteModal.value = false
     }
+  }
 
-    const onImgError = (event) => {
-        event.target.src = new URL('../assets/img/classIcons/default.jpeg', import.meta.url).href
+  const editClass = () => {
+    router.push(`/classes/${classId}/edit`)
+  }
+
+  onMounted(async () => {
+    try {
+      // Datos de la clase y subclases
+      const res = await classService.getOne(classId)
+      classData.value = res.data
+      subclasses.value = res.data.subclasses || []
+
+      // Features de la clase
+      const featuresRes = await classService.getFeatures(classId)
+      features.value = featuresRes.data
+    } catch (error) {
+      router.push('/classes')
     }
-
-    onMounted(async () => {
-        try {
-            // Datos de la clase y subclases
-            const res = await classService.getOne(classId)
-            classData.value = res.data
-            subclasses.value = res.data.subclasses || []
-
-            // Features de la clase
-            const featuresRes = await classService.getFeatures(classId)
-            features.value = featuresRes.data
-        } catch (error) {
-            console.error('Error loading class details:', error)
-        }
-    })
+  })
 </script>

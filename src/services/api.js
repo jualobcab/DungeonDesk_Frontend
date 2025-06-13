@@ -95,4 +95,42 @@ export const diaryService = {
   delete: (campaignId, entryId) => api.delete(`/campaigns/${campaignId}/diary/${entryId}/delete`),
 };
 
+export const adminService = {
+  // LISTAR
+  getFeatures: () => api.get('/admin/features'),
+  getFeature: (id) => api.get(`/admin/features/${id}`),
+
+  // CREAR
+  createArmor: (data) => api.post('/admin/armor/create', data),
+  createWeapon: (data) => api.post('/admin/weapon/create', data),
+  createArtifact: (data) => api.post('/admin/artifact/create', data),
+  createEquipment: (data) => api.post('/admin/equipment/create', data),
+  createFeature: (data) => api.post('/admin/feature/create', data),
+  createSubclass: (data) => api.post('/admin/subclass/create', data),
+  createClass: (data) => api.post('/admin/class/create', data),
+
+  // RELACIONES
+  addSubclassToClass: (data) => api.post('/admin/class/add-subclass', data),
+  addFeatureToClass: (data) => api.post('/admin/class/add-feature', data),
+  addFeatureToSubclass: (data) => api.post('/admin/subclass/add-feature', data),
+
+  // UPDATE
+  updateArmor: (id, data) => api.put(`/admin/armor/${id}/update`, data),
+  updateWeapon: (id, data) => api.put(`/admin/weapon/${id}/update`, data),
+  updateArtifact: (id, data) => api.put(`/admin/artifact/${id}/update`, data),
+  updateEquipment: (id, data) => api.put(`/admin/equipment/${id}/update`, data),
+  updateFeature: (id, data) => api.put(`/admin/feature/${id}/update`, data),
+  updateSubclass: (id, data) => api.put(`/admin/subclass/${id}/update`, data),
+  updateClass: (id, data) => api.put(`/admin/class/${id}/update`, data),
+
+  // DELETE
+  deleteArmor: (id) => api.delete(`/admin/armor/${id}/delete`),
+  deleteWeapon: (id) => api.delete(`/admin/weapon/${id}/delete`),
+  deleteArtifact: (id) => api.delete(`/admin/artifact/${id}/delete`),
+  deleteEquipment: (id) => api.delete(`/admin/equipment/${id}/delete`),
+  deleteFeature: (id) => api.delete(`/admin/feature/${id}/delete`),
+  deleteSubclass: (id) => api.delete(`/admin/subclass/${id}/delete`),
+  deleteClass: (id) => api.delete(`/admin/class/${id}/delete`),
+};
+
 export default api;
