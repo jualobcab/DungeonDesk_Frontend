@@ -15,8 +15,6 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  // Only set Content-Type to application/json if it's not already defined
-  // This prevents overriding 'multipart/form-data' for file uploads
   if (!config.headers['Content-Type'] && !config.headers['content-type']) {
     config.headers['Content-Type'] = 'application/json';
   }
