@@ -3,10 +3,12 @@
     <h1 class="text-3xl font-medieval text-amber-500 mb-8 text-center">Character Details</h1>
     <div class="relative bg-gray-900 border border-amber-900/30 rounded-lg p-8 max-w-2xl mx-auto">
       <!-- Botones superiores: Level Up, Editar, Equipo, Papelera -->
-      <div class="absolute top-4 right-4 flex flex-row-reverse gap-2 z-10">
+      <div
+        class="absolute top-4 right-4 flex flex-col gap-2 z-10 sm:flex-row-reverse sm:gap-2"
+      >
         <!-- Botón de papelera -->
         <button
-          class="bg-red-900 hover:bg-red-700 text-gray-100 rounded-full p-2 transition"
+          class="bg-red-900 hover:bg-red-700 text-gray-100 rounded-full p-2 transition w-10 h-10 flex items-center justify-center"
           @click="showDeleteModal = true"
           title="Borrar personaje"
         >
@@ -16,34 +18,34 @@
         </button>
         <!-- Botón editar -->
         <button
-          class="bg-green-700 hover:bg-green-600 text-white rounded-full px-4 py-2 flex items-center gap-2 font-bold shadow transition"
+          class="bg-green-700 hover:bg-green-600 text-white rounded-full px-4 py-2 flex items-center gap-2 font-bold shadow transition w-full sm:w-auto"
           @click="editCharacter"
           title="Editar personaje"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" />
           </svg>
-          Editar
+          <span class="hidden sm:inline">Editar</span>
         </button>
         <!-- Botón equipo -->
         <button
-          class="bg-amber-700 hover:bg-amber-600 text-white rounded-full px-4 py-2 flex items-center gap-2 font-bold shadow transition"
+          class="bg-amber-700 hover:bg-amber-600 text-white rounded-full px-4 py-2 flex items-center gap-2 font-bold shadow transition w-full sm:w-auto"
           @click="openEquipmentModal"
           title="Equipo"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 014-4h2a4 4 0 014 4v2M7 7a4 4 0 018 0v4a4 4 0 01-8 0V7z" />
           </svg>
-          Equipo
+          <span class="hidden sm:inline">Equipo</span>
         </button>
         <!-- Botón Level Up -->
         <button
           v-if="character.level < 20"
-          class="bg-blue-800 hover:bg-blue-600 text-white rounded-full px-4 py-2 flex items-center gap-2 font-bold shadow transition"
+          class="bg-blue-800 hover:bg-blue-600 text-white rounded-full px-4 py-2 flex items-center gap-2 font-bold shadow transition w-full sm:w-auto"
           @click="showLevelUpModal = true"
           title="Subir de nivel"
         >
-          Level Up
+          <span class="hidden sm:inline">Level Up</span>
           <span>⏫</span>
         </button>
       </div>
