@@ -6,25 +6,25 @@
 </template>
 
 <script>
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+  import { onMounted } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
 
-export default {
-  setup() {
-    const router = useRouter()
-    const authStore = useAuthStore()
+  export default {
+    setup() {
+      const router = useRouter()
+      const authStore = useAuthStore()
 
-    // Automatically log out the user when this component is mounted
-    onMounted(async () => {
-      try {
-        await authStore.logout()
-        router.push('/').then(() => window.location.reload())
-      } catch (error) {
-        console.error('Error during logout:', error)
-        router.push('/')
-      }
-    })
-  },
-}
+      // Automatically log out the user when this component is mounted
+      onMounted(async () => {
+        try {
+          await authStore.logout()
+          router.push('/').then(() => window.location.reload())
+        } catch (error) {
+          console.error('Error during logout:', error)
+          router.push('/')
+        }
+      })
+    },
+  }
 </script>

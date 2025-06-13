@@ -147,203 +147,203 @@
 </template>
 
 <script setup>
-    import { ref, watch, onMounted } from 'vue'
-    import { useRoute, useRouter, RouterLink } from 'vue-router'
-    import { equipmentService, adminService } from '@/services/api'
+  import { ref, watch, onMounted } from 'vue'
+  import { useRoute, useRouter, RouterLink } from 'vue-router'
+  import { equipmentService, adminService } from '@/services/api'
 
-    const router = useRouter()
-    const route = useRoute()
-    const id = route.params.id
+  const router = useRouter()
+  const route = useRoute()
+  const id = route.params.id
 
-    const rarities = [
-        'Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary', 'Woundrous'
-    ]
-    const armorTypes = ['Light', 'Medium', 'Heavy']
-    const weaponTypes = ['Melee', 'Ranged']
-    const artifactTypes = ['Wondrous Item', 'Magic Focus']
-    const dieTypes = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20']
+  const rarities = [
+    'Common', 'Uncommon', 'Rare', 'Very Rare', 'Legendary', 'Woundrous'
+  ]
+  const armorTypes = ['Light', 'Medium', 'Heavy']
+  const weaponTypes = ['Melee', 'Ranged']
+  const artifactTypes = ['Wondrous Item', 'Magic Focus']
+  const dieTypes = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20']
 
-    const form = ref({
-        type: '',
-        name: '',
-        rarity: '',
-        description: '',
-        // Armor
-        armor_type: '',
-        armor_class: '',
-        _armor_id: null,
-        // Weapon
-        weapon_type: '',
-        damage_die: '',
-        damage_type: '',
-        _weapon_id: null,
-        // Artifact
-        artifact_type: '',
-        _artifact_id: null
-    })
-    const errors = ref({})
-    const generalError = ref('')
-    const successMessage = ref('')
+  const form = ref({
+    type: '',
+    name: '',
+    rarity: '',
+    description: '',
+    // Armor
+    armor_type: '',
+    armor_class: '',
+    _armor_id: null,
+    // Weapon
+    weapon_type: '',
+    damage_die: '',
+    damage_type: '',
+    _weapon_id: null,
+    // Artifact
+    artifact_type: '',
+    _artifact_id: null
+  })
+  const errors = ref({})
+  const generalError = ref('')
+  const successMessage = ref('')
 
-    // Para el damage die de weapon
-    const damageDieNumber = ref('')
-    const damageDieType = ref('d6')
+  // Para el damage die de weapon
+  const damageDieNumber = ref('')
+  const damageDieType = ref('d6')
 
-    // Cargar datos del equipment
-    onMounted(async () => {
-        try {
-            // Buscar el equipment general
-            const res = await equipmentService.getOne(id)
-            const eq = res.data
-            form.value.type = eq.type
-            form.value.name = eq.name
-            form.value.rarity = eq.rarity
-            form.value.description = eq.description
+  // Cargar datos del equipment
+  onMounted(async () => {
+    try {
+      // Buscar el equipment general
+      const res = await equipmentService.getOne(id)
+      const eq = res.data
+      form.value.type = eq.type
+      form.value.name = eq.name
+      form.value.rarity = eq.rarity
+      form.value.description = eq.description
 
-            // Cargar datos específicos según el tipo
-            if (eq.type === 'armor') {
-                // Buscar el armor por equipment_id
-                const armorsRes = await equipmentService.getArmors()
-                const armor = armorsRes.data.find(a => a.equipment_id == id)
-                if (armor) {
-                    const armorRes = await equipmentService.getArmor(armor.armor_id)
-                    form.value.armor_type = armorRes.data.type
-                    form.value.armor_class = armorRes.data.armor_class
-                    form.value._armor_id = armor.armor_id
-                }
-            } else if (eq.type === 'weapon') {
-                // Buscar el weapon por equipment_id
-                const weaponsRes = await equipmentService.getWeapons()
-                const weapon = weaponsRes.data.find(w => w.equipment_id == id)
-                if (weapon) {
-                    const weaponRes = await equipmentService.getWeapon(weapon.weapon_id)
-                    form.value.weapon_type = weaponRes.data.type
-                    form.value.damage_die = weaponRes.data.damage_die
-                    form.value.damage_type = weaponRes.data.damage_type
-                    form.value._weapon_id = weapon.weapon_id
-                    // Separar damage_die en número y tipo
-                    const match = (weaponRes.data.damage_die || '').match(/^(\d+)(d\d+)$/)
-                    if (match) {
-                        damageDieNumber.value = match[1]
-                        damageDieType.value = match[2]
-                    } else {
-                        damageDieNumber.value = ''
-                        damageDieType.value = 'd6'
-                    }
-                }
-            } else if (eq.type === 'artifact') {
-                // Buscar el artifact por equipment_id
-                const artifactsRes = await equipmentService.getArtifacts()
-                const artifact = artifactsRes.data.find(a => a.equipment_id == id)
-                if (artifact) {
-                    const artifactRes = await equipmentService.getArtifact(artifact.artifact_id)
-                    form.value.artifact_type = artifactRes.data.type
-                    form.value._artifact_id = artifact.artifact_id
-                }
-            }
-        } catch (e) {
-            generalError.value = 'Error loading equipment data'
+      // Cargar datos específicos según el tipo
+      if (eq.type === 'armor') {
+        // Buscar el armor por equipment_id
+        const armorsRes = await equipmentService.getArmors()
+        const armor = armorsRes.data.find(a => a.equipment_id == id)
+        if (armor) {
+          const armorRes = await equipmentService.getArmor(armor.armor_id)
+          form.value.armor_type = armorRes.data.type
+          form.value.armor_class = armorRes.data.armor_class
+          form.value._armor_id = armor.armor_id
         }
-    })
-
-    // Sincroniza damage_die con los selects
-    watch([damageDieNumber, damageDieType], () => {
-        if (form.value.type === 'weapon') {
-            form.value.damage_die = damageDieNumber.value && damageDieType.value
-            ? `${damageDieNumber.value}${damageDieType.value}`
-            : ''
+      } else if (eq.type === 'weapon') {
+        // Buscar el weapon por equipment_id
+        const weaponsRes = await equipmentService.getWeapons()
+        const weapon = weaponsRes.data.find(w => w.equipment_id == id)
+        if (weapon) {
+          const weaponRes = await equipmentService.getWeapon(weapon.weapon_id)
+          form.value.weapon_type = weaponRes.data.type
+          form.value.damage_die = weaponRes.data.damage_die
+          form.value.damage_type = weaponRes.data.damage_type
+          form.value._weapon_id = weapon.weapon_id
+          // Separar damage_die en número y tipo
+          const match = (weaponRes.data.damage_die || '').match(/^(\d+)(d\d+)$/)
+          if (match) {
+            damageDieNumber.value = match[1]
+            damageDieType.value = match[2]
+          } else {
+            damageDieNumber.value = ''
+            damageDieType.value = 'd6'
+          }
         }
-    })
-
-    // Si cambia el tipo (no debería, pero por si acaso), limpia los campos específicos
-    watch(() => form.value.type, (newType) => {
-        form.value.armor_type = ''
-        form.value.armor_class = ''
-        form.value.weapon_type = ''
-        form.value.damage_die = ''
-        form.value.damage_type = ''
-        form.value.artifact_type = ''
-        form.value._armor_id = null
-        form.value._weapon_id = null
-        form.value._artifact_id = null
-        damageDieNumber.value = ''
-        damageDieType.value = 'd6'
-    })
-
-    const validate = () => {
-        errors.value = {}
-        // General
-        if (!form.value.name) errors.value.name = 'Name is required'
-        if (form.value.name && form.value.name.length > 255) errors.value.name = 'Name must be at most 255 characters'
-        if (!form.value.rarity) errors.value.rarity = 'Rarity is required'
-        else if (!rarities.includes(form.value.rarity)) errors.value.rarity = 'Invalid rarity'
-        // Campos específicos
-        if (form.value.type === 'armor') {
-            if (!form.value.armor_type) errors.value.armor_type = 'Armor type is required'
-            else if (!armorTypes.includes(form.value.armor_type)) errors.value.armor_type = 'Invalid armor type'
-            if (!form.value.armor_class) errors.value.armor_class = 'Armor class is required'
-            else if (form.value.armor_class < 1) errors.value.armor_class = 'Armor class must be at least 1'
+      } else if (eq.type === 'artifact') {
+        // Buscar el artifact por equipment_id
+        const artifactsRes = await equipmentService.getArtifacts()
+        const artifact = artifactsRes.data.find(a => a.equipment_id == id)
+        if (artifact) {
+          const artifactRes = await equipmentService.getArtifact(artifact.artifact_id)
+          form.value.artifact_type = artifactRes.data.type
+          form.value._artifact_id = artifact.artifact_id
         }
-        if (form.value.type === 'weapon') {
-            if (!form.value.weapon_type) errors.value.weapon_type = 'Weapon type is required'
-            else if (!weaponTypes.includes(form.value.weapon_type)) errors.value.weapon_type = 'Invalid weapon type'
-            if (!damageDieNumber.value || !damageDieType.value) errors.value.damage_die = 'Damage die is required'
-            if (!form.value.damage_type) errors.value.damage_type = 'Damage type is required'
-        }
-        if (form.value.type === 'artifact') {
-            if (!form.value.artifact_type) errors.value.artifact_type = 'Artifact type is required'
-            else if (!artifactTypes.includes(form.value.artifact_type)) errors.value.artifact_type = 'Invalid artifact type'
-        }
-        return Object.keys(errors.value).length === 0
+      }
+    } catch (e) {
+      generalError.value = 'Error loading equipment data'
     }
+  })
 
-    const submit = async () => {
-        generalError.value = ''
-        successMessage.value = ''
-        if (!validate()) return
+  // Sincroniza damage_die con los selects
+  watch([damageDieNumber, damageDieType], () => {
+      if (form.value.type === 'weapon') {
+          form.value.damage_die = damageDieNumber.value && damageDieType.value
+          ? `${damageDieNumber.value}${damageDieType.value}`
+          : ''
+      }
+  })
 
-        try {
-            let payload = {
-            name: form.value.name,
-            rarity: form.value.rarity,
-            description: form.value.description,
-            }
-            let res = null
+  // Si cambia el tipo (no debería, pero por si acaso), limpia los campos específicos
+  watch(() => form.value.type, (newType) => {
+      form.value.armor_type = ''
+      form.value.armor_class = ''
+      form.value.weapon_type = ''
+      form.value.damage_die = ''
+      form.value.damage_type = ''
+      form.value.artifact_type = ''
+      form.value._armor_id = null
+      form.value._weapon_id = null
+      form.value._artifact_id = null
+      damageDieNumber.value = ''
+      damageDieType.value = 'd6'
+  })
 
-            if (form.value.type === 'armor') {
-            res = await adminService.updateArmor(form.value._armor_id, {
-                ...payload,
-                type: form.value.armor_type,
-                armor_class: Number(form.value.armor_class)
-            })
-            } else if (form.value.type === 'weapon') {
-            res = await adminService.updateWeapon(form.value._weapon_id, {
-                ...payload,
-                type: form.value.weapon_type,
-                damage_die: form.value.damage_die,
-                damage_type: form.value.damage_type
-            })
-            } else if (form.value.type === 'artifact') {
-            res = await adminService.updateArtifact(form.value._artifact_id, {
-                ...payload,
-                type: form.value.artifact_type
-            })
-            } else {
-            res = await adminService.updateEquipment(id, payload)
-            }
-
-            successMessage.value = 'Equipment updated successfully!'
-            setTimeout(() => {
-            router.push('/equipment')
-            }, 1200)
-        } catch (error) {
-            if (error.response?.data?.errors) {
-            errors.value = error.response.data.errors
-            } else if (error.response?.data?.message) {
-            generalError.value = error.response.data.message
-            } else {
-            generalError.value = 'Error updating the equipment'
-            }
-        }
+  const validate = () => {
+    errors.value = {}
+    // General
+    if (!form.value.name) errors.value.name = 'Name is required'
+    if (form.value.name && form.value.name.length > 255) errors.value.name = 'Name must be at most 255 characters'
+    if (!form.value.rarity) errors.value.rarity = 'Rarity is required'
+    else if (!rarities.includes(form.value.rarity)) errors.value.rarity = 'Invalid rarity'
+    // Campos específicos
+    if (form.value.type === 'armor') {
+      if (!form.value.armor_type) errors.value.armor_type = 'Armor type is required'
+      else if (!armorTypes.includes(form.value.armor_type)) errors.value.armor_type = 'Invalid armor type'
+      if (!form.value.armor_class) errors.value.armor_class = 'Armor class is required'
+      else if (form.value.armor_class < 1) errors.value.armor_class = 'Armor class must be at least 1'
     }
+    if (form.value.type === 'weapon') {
+      if (!form.value.weapon_type) errors.value.weapon_type = 'Weapon type is required'
+      else if (!weaponTypes.includes(form.value.weapon_type)) errors.value.weapon_type = 'Invalid weapon type'
+      if (!damageDieNumber.value || !damageDieType.value) errors.value.damage_die = 'Damage die is required'
+      if (!form.value.damage_type) errors.value.damage_type = 'Damage type is required'
+    }
+    if (form.value.type === 'artifact') {
+      if (!form.value.artifact_type) errors.value.artifact_type = 'Artifact type is required'
+      else if (!artifactTypes.includes(form.value.artifact_type)) errors.value.artifact_type = 'Invalid artifact type'
+    }
+    return Object.keys(errors.value).length === 0
+  }
+
+  const submit = async () => {
+    generalError.value = ''
+    successMessage.value = ''
+    if (!validate()) return
+
+    try {
+      let payload = {
+        name: form.value.name,
+        rarity: form.value.rarity,
+        description: form.value.description,
+      }
+      let res = null
+
+      if (form.value.type === 'armor') {
+        res = await adminService.updateArmor(form.value._armor_id, {
+          ...payload,
+          type: form.value.armor_type,
+          armor_class: Number(form.value.armor_class)
+        })
+      } else if (form.value.type === 'weapon') {
+        res = await adminService.updateWeapon(form.value._weapon_id, {
+          ...payload,
+          type: form.value.weapon_type,
+          damage_die: form.value.damage_die,
+          damage_type: form.value.damage_type
+        })
+      } else if (form.value.type === 'artifact') {
+        res = await adminService.updateArtifact(form.value._artifact_id, {
+          ...payload,
+          type: form.value.artifact_type
+        })
+      } else {
+        res = await adminService.updateEquipment(id, payload)
+      }
+
+      successMessage.value = 'Equipment updated successfully!'
+        setTimeout(() => {
+        router.push('/equipment')
+      }, 1200)
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        errors.value = error.response.data.errors
+      } else if (error.response?.data?.message) {
+        generalError.value = error.response.data.message
+      } else {
+        generalError.value = 'Error updating the equipment'
+      }
+    }
+  }
 </script>

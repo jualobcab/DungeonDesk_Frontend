@@ -128,7 +128,7 @@
       showDeleteModal.value = false
       router.push(`/classes/${classId}`)
     } catch (e) {
-      alert('Error deleting the subclass')
+      console.error('Error deleting the subclass', e)
       showDeleteModal.value = false
     }
   }

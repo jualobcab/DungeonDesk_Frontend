@@ -214,7 +214,7 @@
     if (type === 'artifact' && item.artifact_id) {
       return `/equipment/artifacts/${item.artifact_id}`
     }
-    // Fallback: usa equipment_id si no hay otro id específico
+    // Usa equipment_id si no hay otro id específico
     return `/equipment/${type}s/${item.equipment_id}`
   }
 
@@ -249,7 +249,7 @@
         currentPage.value--
       }
     } catch (error) {
-      alert('Error deleting equipment')
+      console.log('Error deleting equipment', error)
       showDeleteModal.value = false
       equipmentToDelete.value = null
     }

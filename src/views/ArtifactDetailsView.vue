@@ -77,68 +77,68 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { equipmentService, adminService } from '@/services/api'
-import { useAuthStore } from '@/stores/auth'
+  import { ref, onMounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { equipmentService, adminService } from '@/services/api'
+  import { useAuthStore } from '@/stores/auth'
 
-const route = useRoute()
-const router = useRouter()
-const artifact = ref({})
-const showDeleteModal = ref(false)
-const authStore = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
+  const artifact = ref({})
+  const showDeleteModal = ref(false)
+  const authStore = useAuthStore()
 
-const rarityClass = (rarity) => {
-  switch ((rarity || '').toLowerCase()) {
-    case 'common':
-      return 'text-gray-300'
-    case 'uncommon':
-      return 'text-green-400'
-    case 'rare':
-      return 'text-blue-400'
-    case 'very rare':
-      return 'text-purple-400'
-    case 'legendary':
-      return 'text-yellow-400'
-    case 'artifact':
-      return 'text-amber-500'
-    default:
-      return 'text-gray-200'
+  const rarityClass = (rarity) => {
+    switch ((rarity || '').toLowerCase()) {
+      case 'common':
+        return 'text-gray-300'
+      case 'uncommon':
+        return 'text-green-400'
+      case 'rare':
+        return 'text-blue-400'
+      case 'very rare':
+        return 'text-purple-400'
+      case 'legendary':
+        return 'text-yellow-400'
+      case 'artifact':
+        return 'text-amber-500'
+      default:
+        return 'text-gray-200'
+    }
   }
-}
 
-const getArtifactImg = (type) => {
-  if (!type) return new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
-  const fileName = type.toLowerCase().replace(/\s+/g, '-')
-  return new URL(`../assets/img/equipmentIcons/${fileName}.jpg`, import.meta.url).href
-}
-
-const onImgError = (event) => {
-  event.target.src = new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
-}
-
-const editArtifact = () => {
-  // Redirige al update del equipment (usa equipment_id)
-  router.push(`/equipment/${artifact.value.equipment_id}/edit`)
-}
-
-const confirmDelete = async () => {
-  try {
-    await adminService.deleteArtifact(route.params.id)
-    showDeleteModal.value = false
-    router.push('/equipment/artifacts')
-  } catch (error) {
-    alert('Error al borrar el artifact')
-    showDeleteModal.value = false
+  const getArtifactImg = (type) => {
+    if (!type) return new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
+    const fileName = type.toLowerCase().replace(/\s+/g, '-')
+    return new URL(`../assets/img/equipmentIcons/${fileName}.jpg`, import.meta.url).href
   }
-}
 
-onMounted(async () => {
-  try {
-    const res = await equipmentService.getArtifact(route.params.id)
-    artifact.value = res.data
-  } catch (error) {
-    router.push('/equipment/artifacts')
+  const onImgError = (event) => {
+    event.target.src = new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
   }
-})
+
+  const editArtifact = () => {
+    // Redirige al update del equipment
+    router.push(`/equipment/${artifact.value.equipment_id}/edit`)
+  }
+
+  const confirmDelete = async () => {
+    try {
+      await adminService.deleteArtifact(route.params.id)
+      showDeleteModal.value = false
+      router.push('/equipment/artifacts')
+    } catch (error) {
+      console.log('Error al borrar el artifact', error)
+      showDeleteModal.value = false
+    }
+  }
+
+  onMounted(async () => {
+    try {
+      const res = await equipmentService.getArtifact(route.params.id)
+      artifact.value = res.data
+    } catch (error) {
+      router.push('/equipment/artifacts')
+    }
+  })
 </script>

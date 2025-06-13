@@ -44,24 +44,23 @@
 </template>
 
 <script setup>
-import { useAuthStore } from '@/stores/auth'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
+  import { ref } from 'vue'
+  import { useRouter } from 'vue-router'
 
-const authStore = useAuthStore()
-const router = useRouter()
-const credentials = ref({
-  email: '',
-  password: '',
-})
+  const authStore = useAuthStore()
+  const router = useRouter()
+  const credentials = ref({
+    email: '',
+    password: '',
+  })
 
-const handleLogin = async () => {
-  try {
-    await authStore.login(credentials.value)
-    router.push('/').then(() => window.location.reload())
-  } catch (error) {
-    console.error('Login failed:', error)
-    // Optionally show an error message to the user
+  const handleLogin = async () => {
+    try {
+      await authStore.login(credentials.value)
+      router.push('/').then(() => window.location.reload())
+    } catch (error) {
+      console.error('Login failed:', error)
+    }
   }
-}
 </script>

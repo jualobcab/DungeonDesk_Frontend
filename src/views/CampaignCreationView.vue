@@ -36,48 +36,48 @@
 </template>
 
 <script setup>
-    import { ref } from 'vue'
-    import { useRouter, RouterLink } from 'vue-router'
-    import { campaignService } from '@/services/api'
+  import { ref } from 'vue'
+  import { useRouter, RouterLink } from 'vue-router'
+  import { campaignService } from '@/services/api'
 
-    const router = useRouter()
-    const form = ref({
-        name: '',
-        description: ''
-    })
-    const errors = ref({})
-    const generalError = ref('')
-    const successMessage = ref('')
+  const router = useRouter()
+  const form = ref({
+    name: '',
+    description: ''
+  })
+  const errors = ref({})
+  const generalError = ref('')
+  const successMessage = ref('')
 
-    const validate = () => {
-        errors.value = {}
-        if (!form.value.name) errors.value.name = 'El nombre es obligatorio'
-        if (form.value.name && form.value.name.length > 255) errors.value.name = 'El nombre no puede superar 255 caracteres'
-        return Object.keys(errors.value).length === 0
+  const validate = () => {
+    errors.value = {}
+    if (!form.value.name) errors.value.name = 'El nombre es obligatorio'
+    if (form.value.name && form.value.name.length > 255) errors.value.name = 'El nombre no puede superar 255 caracteres'
+    return Object.keys(errors.value).length === 0
+  }
+
+  const submit = async () => {
+    generalError.value = ''
+    successMessage.value = ''
+    if (!validate()) return
+
+    try {
+      await campaignService.create({
+        name: form.value.name,
+        description: form.value.description
+      })
+      successMessage.value = '¡Campaña creada exitosamente!'
+      setTimeout(() => {
+        router.push('/campaigns')
+      }, 1200)
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        errors.value = error.response.data.errors
+      } else if (error.response?.data?.message) {
+        generalError.value = error.response.data.message
+      } else {
+        generalError.value = 'Error al crear la campaña'
+      }
     }
-
-    const submit = async () => {
-        generalError.value = ''
-        successMessage.value = ''
-        if (!validate()) return
-
-        try {
-            await campaignService.create({
-            name: form.value.name,
-            description: form.value.description
-            })
-            successMessage.value = '¡Campaña creada exitosamente!'
-            setTimeout(() => {
-            router.push('/campaigns')
-            }, 1200)
-        } catch (error) {
-            if (error.response?.data?.errors) {
-            errors.value = error.response.data.errors
-            } else if (error.response?.data?.message) {
-            generalError.value = error.response.data.message
-            } else {
-            generalError.value = 'Error al crear la campaña'
-            }
-        }
-    }
+  }
 </script>

@@ -82,61 +82,61 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { equipmentService, adminService } from '@/services/api'
-import { useAuthStore } from '@/stores/auth'
+  import { ref, onMounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { equipmentService, adminService } from '@/services/api'
+  import { useAuthStore } from '@/stores/auth'
 
-const route = useRoute()
-const router = useRouter()
-const weapon = ref({})
-const showDeleteModal = ref(false)
-const authStore = useAuthStore()
+  const route = useRoute()
+  const router = useRouter()
+  const weapon = ref({})
+  const showDeleteModal = ref(false)
+  const authStore = useAuthStore()
 
-const rarityClass = (rarity) => {
-  switch ((rarity || '').toLowerCase()) {
-    case 'common':
-      return 'text-gray-300'
-    case 'uncommon':
-      return 'text-green-400'
-    case 'rare':
-      return 'text-blue-400'
-    case 'very rare':
-      return 'text-purple-400'
-    case 'legendary':
-      return 'text-yellow-400'
-    case 'artifact':
-      return 'text-amber-500'
-    default:
-      return 'text-gray-200'
+  const rarityClass = (rarity) => {
+    switch ((rarity || '').toLowerCase()) {
+      case 'common':
+        return 'text-gray-300'
+      case 'uncommon':
+        return 'text-green-400'
+      case 'rare':
+        return 'text-blue-400'
+      case 'very rare':
+        return 'text-purple-400'
+      case 'legendary':
+        return 'text-yellow-400'
+      case 'artifact':
+        return 'text-amber-500'
+      default:
+        return 'text-gray-200'
+    }
   }
-}
 
-const onImgError = (event) => {
-  event.target.src = new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
-}
-
-const editWeapon = () => {
-  router.push(`/equipment/${weapon.value.equipment_id}/edit`)
-}
-
-const confirmDelete = async () => {
-  try {
-    await adminService.deleteWeapon(route.params.id)
-    showDeleteModal.value = false
-    router.push('/equipment/weapons')
-  } catch (error) {
-    alert('Error al borrar el weapon')
-    showDeleteModal.value = false
+  const onImgError = (event) => {
+    event.target.src = new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
   }
-}
 
-onMounted(async () => {
-  try {
-    const res = await equipmentService.getWeapon(route.params.id)
-    weapon.value = res.data
-  } catch (error) {
-    router.push('/equipment/weapons')
+  const editWeapon = () => {
+    router.push(`/equipment/${weapon.value.equipment_id}/edit`)
   }
-})
+
+  const confirmDelete = async () => {
+    try {
+      await adminService.deleteWeapon(route.params.id)
+      showDeleteModal.value = false
+      router.push('/equipment/weapons')
+    } catch (error) {
+      console.error('Error al borrar el weapon', error)
+      showDeleteModal.value = false
+    }
+  }
+
+  onMounted(async () => {
+    try {
+      const res = await equipmentService.getWeapon(route.params.id)
+      weapon.value = res.data
+    } catch (error) {
+      router.push('/equipment/weapons')
+    }
+  })
 </script>

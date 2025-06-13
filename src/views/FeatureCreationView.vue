@@ -35,48 +35,48 @@
 </template>
 
 <script setup>
-    import { ref } from 'vue'
-    import { useRouter, RouterLink } from 'vue-router'
-    import { adminService } from '@/services/api'
+  import { ref } from 'vue'
+  import { useRouter, RouterLink } from 'vue-router'
+  import { adminService } from '@/services/api'
 
-    const router = useRouter()
-    const form = ref({
-        name: '',
-        description: ''
-    })
-    const errors = ref({})
-    const generalError = ref('')
+  const router = useRouter()
+  const form = ref({
+    name: '',
+    description: ''
+  })
+  const errors = ref({})
+  const generalError = ref('')
 
-    const validate = () => {
-        errors.value = {}
-        if (!form.value.name) errors.value.name = 'El nombre es obligatorio'
-        if (form.value.name && form.value.name.length > 255) errors.value.name = 'El nombre no puede superar 255 caracteres'
-        return Object.keys(errors.value).length === 0
+  const validate = () => {
+    errors.value = {}
+    if (!form.value.name) errors.value.name = 'El nombre es obligatorio'
+    if (form.value.name && form.value.name.length > 255) errors.value.name = 'El nombre no puede superar 255 caracteres'
+    return Object.keys(errors.value).length === 0
+  }
+
+  const submit = async () => {
+    generalError.value = ''
+    if (!validate()) return
+
+    try {
+      const res = await adminService.createFeature({
+        name: form.value.name,
+        description: form.value.description
+      })
+      const id = res.data.feature.feature_id || res.data.feature_id || res.data.id || res.data.id_feature
+      if (id) {
+        router.push(`/features/${id}`)
+      } else {
+        generalError.value = 'No se pudo obtener el ID de la nueva feature'
+      }
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        errors.value = error.response.data.errors
+      } else if (error.response?.data?.message) {
+        generalError.value = error.response.data.message
+      } else {
+        generalError.value = 'Error al crear la feature'
+      }
     }
-
-    const submit = async () => {
-        generalError.value = ''
-        if (!validate()) return
-
-        try {
-            const res = await adminService.createFeature({
-                name: form.value.name,
-                description: form.value.description
-            })
-            const id = res.data.feature.feature_id || res.data.feature_id || res.data.id || res.data.id_feature
-            if (id) {
-                router.push(`/features/${id}`)
-            } else {
-                generalError.value = 'No se pudo obtener el ID de la nueva feature'
-            }
-        } catch (error) {
-            if (error.response?.data?.errors) {
-                errors.value = error.response.data.errors
-            } else if (error.response?.data?.message) {
-                generalError.value = error.response.data.message
-            } else {
-                generalError.value = 'Error al crear la feature'
-            }
-        }
-    }
+  }
 </script>

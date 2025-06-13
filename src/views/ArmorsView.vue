@@ -154,97 +154,97 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { equipmentService, adminService } from '@/services/api'
-import { RouterLink, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+  import { ref, computed, onMounted } from 'vue'
+  import { equipmentService, adminService } from '@/services/api'
+  import { RouterLink, useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
-const router = useRouter()
+  const authStore = useAuthStore()
+  const router = useRouter()
 
-const buttons = [
-  { name: 'armors', label: 'Armors', to: '/equipment/armors' },
-  { name: 'weapons', label: 'Weapons', to: '/equipment/weapons' },
-  { name: 'artifacts', label: 'Artifacts', to: '/equipment/artifacts' }
-]
+  const buttons = [
+    { name: 'armors', label: 'Armors', to: '/equipment/armors' },
+    { name: 'weapons', label: 'Weapons', to: '/equipment/weapons' },
+    { name: 'artifacts', label: 'Artifacts', to: '/equipment/artifacts' }
+  ]
 
-const armors = ref([])
-const currentPage = ref(1)
-const pageSize = 10
+  const armors = ref([])
+  const currentPage = ref(1)
+  const pageSize = 10
 
-const showDeleteModal = ref(false)
-const armorToDelete = ref(null)
+  const showDeleteModal = ref(false)
+  const armorToDelete = ref(null)
 
-const rarityClass = (rarity) => {
-  switch ((rarity || '').toLowerCase()) {
-    case 'common':
-      return 'text-gray-300'
-    case 'uncommon':
-      return 'text-green-400'
-    case 'rare':
-      return 'text-blue-400'
-    case 'very rare':
-      return 'text-purple-400'
-    case 'legendary':
-      return 'text-yellow-400'
-    case 'artifact':
-      return 'text-amber-500'
-    default:
-      return 'text-gray-200'
-  }
-}
-
-const onImgError = (event) => {
-  event.target.src = '/assets/img/equipmentIcons/default.jpg'
-}
-
-// Ordenar alfabéticamente por name
-const sortedArmors = computed(() =>
-  [...armors.value].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-)
-
-const totalPages = computed(() => Math.ceil(sortedArmors.value.length / pageSize))
-
-const paginatedArmors = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return sortedArmors.value.slice(start, start + pageSize)
-})
-
-const openDeleteModal = (item) => {
-  armorToDelete.value = item
-  showDeleteModal.value = true
-}
-
-const confirmDelete = async () => {
-  if (!armorToDelete.value) return
-  try {
-    await adminService.deleteArmor(armorToDelete.value.armor_id)
-    armors.value = armors.value.filter(
-      a => a.armor_id !== armorToDelete.value.armor_id
-    )
-    showDeleteModal.value = false
-    armorToDelete.value = null
-    // Si la página actual se queda vacía, retrocede una página si es posible
-    if (paginatedArmors.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
+  const rarityClass = (rarity) => {
+    switch ((rarity || '').toLowerCase()) {
+      case 'common':
+        return 'text-gray-300'
+      case 'uncommon':
+        return 'text-green-400'
+      case 'rare':
+        return 'text-blue-400'
+      case 'very rare':
+        return 'text-purple-400'
+      case 'legendary':
+        return 'text-yellow-400'
+      case 'artifact':
+        return 'text-amber-500'
+      default:
+        return 'text-gray-200'
     }
-  } catch (error) {
-    alert('Error al borrar la armadura')
-    showDeleteModal.value = false
-    armorToDelete.value = null
   }
-}
 
-const editArmor = (item) => {
-  router.push(`/equipment/${item.equipment_id}/edit`)
-}
-
-onMounted(async () => {
-  try {
-    const res = await equipmentService.getArmors()
-    armors.value = res.data
-  } catch (error) {
-    console.error('Error loading armors:', error)
+  const onImgError = (event) => {
+    event.target.src = '/assets/img/equipmentIcons/default.jpg'
   }
-})
+
+  // Ordenar alfabéticamente por name
+  const sortedArmors = computed(() =>
+    [...armors.value].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  )
+
+  const totalPages = computed(() => Math.ceil(sortedArmors.value.length / pageSize))
+
+  const paginatedArmors = computed(() => {
+    const start = (currentPage.value - 1) * pageSize
+    return sortedArmors.value.slice(start, start + pageSize)
+  })
+
+  const openDeleteModal = (item) => {
+    armorToDelete.value = item
+    showDeleteModal.value = true
+  }
+
+  const confirmDelete = async () => {
+    if (!armorToDelete.value) return
+    try {
+      await adminService.deleteArmor(armorToDelete.value.armor_id)
+      armors.value = armors.value.filter(
+        a => a.armor_id !== armorToDelete.value.armor_id
+      )
+      showDeleteModal.value = false
+      armorToDelete.value = null
+      // Si la página actual se queda vacía, retrocede una página si es posible
+      if (paginatedArmors.value.length === 0 && currentPage.value > 1) {
+        currentPage.value--
+      }
+    } catch (error) {
+      console.error('Error al borrar la armadura', error)
+      showDeleteModal.value = false
+      armorToDelete.value = null
+    }
+  }
+
+  const editArmor = (item) => {
+    router.push(`/equipment/${item.equipment_id}/edit`)
+  }
+
+  onMounted(async () => {
+    try {
+      const res = await equipmentService.getArmors()
+      armors.value = res.data
+    } catch (error) {
+      console.error('Error loading armors:', error)
+    }
+  })
 </script>

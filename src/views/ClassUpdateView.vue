@@ -113,137 +113,137 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { adminService, classService } from '@/services/api'
+  import { ref, onMounted } from 'vue'
+  import { useRoute, useRouter, RouterLink } from 'vue-router'
+  import { adminService, classService } from '@/services/api'
 
-const route = useRoute()
-const router = useRouter()
-const classId = route.params.id
+  const route = useRoute()
+  const router = useRouter()
+  const classId = route.params.id
 
-const form = ref({
-  name: '',
-  description: '',
-  subclass_level: ''
-})
-const errors = ref({})
-const generalError = ref('')
-const successMessage = ref('')
+  const form = ref({
+    name: '',
+    description: '',
+    subclass_level: ''
+  })
+  const errors = ref({})
+  const generalError = ref('')
+  const successMessage = ref('')
 
-const subclasses = ref([])
+  const subclasses = ref([])
 
-// Subclass modal state
-const showAddSubclassModal = ref(false)
-const subclassForm = ref({
-  name: '',
-  description: ''
-})
-const subclassErrors = ref({})
-const subclassSuccess = ref('')
-const subclassGeneralError = ref('')
+  // Subclass modal state
+  const showAddSubclassModal = ref(false)
+  const subclassForm = ref({
+    name: '',
+    description: ''
+  })
+  const subclassErrors = ref({})
+  const subclassSuccess = ref('')
+  const subclassGeneralError = ref('')
 
-// Cargar datos de la clase y subclases
-onMounted(async () => {
-  try {
-    const res = await classService.getOne(classId)
-    form.value.name = res.data.name
-    form.value.description = res.data.description
-    form.value.subclass_level = res.data.subclass_level
-    // Cargar subclases
-    const subRes = await classService.getSubclasses(classId)
-    subclasses.value = subRes.data
-  } catch (e) {
-    generalError.value = 'Error loading class data'
+  // Cargar datos de la clase y subclases
+  onMounted(async () => {
+    try {
+      const res = await classService.getOne(classId)
+      form.value.name = res.data.name
+      form.value.description = res.data.description
+      form.value.subclass_level = res.data.subclass_level
+      // Cargar subclases
+      const subRes = await classService.getSubclasses(classId)
+      subclasses.value = subRes.data
+    } catch (e) {
+      generalError.value = 'Error loading class data'
+    }
+  })
+
+  const validate = () => {
+    errors.value = {}
+    if (!form.value.name) errors.value.name = 'Name is required'
+    if (form.value.name && form.value.name.length > 255) errors.value.name = 'Name must be at most 255 characters'
+    if (form.value.subclass_level && form.value.subclass_level < 1) errors.value.subclass_level = 'Subclass level must be at least 1'
+    return Object.keys(errors.value).length === 0
   }
-})
 
-const validate = () => {
-  errors.value = {}
-  if (!form.value.name) errors.value.name = 'Name is required'
-  if (form.value.name && form.value.name.length > 255) errors.value.name = 'Name must be at most 255 characters'
-  if (form.value.subclass_level && form.value.subclass_level < 1) errors.value.subclass_level = 'Subclass level must be at least 1'
-  return Object.keys(errors.value).length === 0
-}
+  const submit = async () => {
+    generalError.value = ''
+    successMessage.value = ''
+    if (!validate()) return
 
-const submit = async () => {
-  generalError.value = ''
-  successMessage.value = ''
-  if (!validate()) return
-
-  try {
-    await adminService.updateClass(classId, {
-      name: form.value.name,
-      description: form.value.description,
-      subclass_level: form.value.subclass_level ? Number(form.value.subclass_level) : null
-    })
-    successMessage.value = 'Class updated successfully!'
-    // Recargar subclases si es necesario
-    const subRes = await classService.getSubclasses(classId)
-    subclasses.value = subRes.data
-  } catch (error) {
-    if (error.response?.data?.errors) {
-      errors.value = error.response.data.errors
-    } else if (error.response?.data?.message) {
-      generalError.value = error.response.data.message
-    } else {
-      generalError.value = 'Error updating the class'
+    try {
+      await adminService.updateClass(classId, {
+        name: form.value.name,
+        description: form.value.description,
+        subclass_level: form.value.subclass_level ? Number(form.value.subclass_level) : null
+      })
+      successMessage.value = 'Class updated successfully!'
+      // Recargar subclases si es necesario
+      const subRes = await classService.getSubclasses(classId)
+      subclasses.value = subRes.data
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        errors.value = error.response.data.errors
+      } else if (error.response?.data?.message) {
+        generalError.value = error.response.data.message
+      } else {
+        generalError.value = 'Error updating the class'
+      }
     }
   }
-}
 
-// Subclass management
-const closeSubclassModal = () => {
-  showAddSubclassModal.value = false
-  subclassForm.value = { name: '', description: '' }
-  subclassErrors.value = {}
-  subclassSuccess.value = ''
-  subclassGeneralError.value = ''
-}
+  // Subclass management
+  const closeSubclassModal = () => {
+    showAddSubclassModal.value = false
+    subclassForm.value = { name: '', description: '' }
+    subclassErrors.value = {}
+    subclassSuccess.value = ''
+    subclassGeneralError.value = ''
+  }
 
-const validateSubclass = () => {
-  subclassErrors.value = {}
-  if (!subclassForm.value.name) subclassErrors.value.name = 'Name is required'
-  if (subclassForm.value.name && subclassForm.value.name.length > 255) subclassErrors.value.name = 'Name must be at most 255 characters'
-  return Object.keys(subclassErrors.value).length === 0
-}
+  const validateSubclass = () => {
+    subclassErrors.value = {}
+    if (!subclassForm.value.name) subclassErrors.value.name = 'Name is required'
+    if (subclassForm.value.name && subclassForm.value.name.length > 255) subclassErrors.value.name = 'Name must be at most 255 characters'
+    return Object.keys(subclassErrors.value).length === 0
+  }
 
-const submitSubclass = async () => {
-  subclassSuccess.value = ''
-  subclassGeneralError.value = ''
-  if (!validateSubclass()) return
+  const submitSubclass = async () => {
+    subclassSuccess.value = ''
+    subclassGeneralError.value = ''
+    if (!validateSubclass()) return
 
-  try {
-    await adminService.createSubclass({
-      class_id: classId,
-      name: subclassForm.value.name,
-      description: subclassForm.value.description
-    })
-    subclassSuccess.value = 'Subclass created successfully!'
-    // Recargar subclases
-    const subRes = await classService.getSubclasses(classId)
-    subclasses.value = subRes.data
-    // Limpiar formulario tras éxito
-    setTimeout(() => {
-      closeSubclassModal()
-    }, 1200)
-  } catch (error) {
-    if (error.response?.data?.errors) {
-      subclassErrors.value = error.response.data.errors
-    } else if (error.response?.data?.message) {
-      subclassGeneralError.value = error.response.data.message
-    } else {
-      subclassGeneralError.value = 'Error creating the subclass'
+    try {
+      await adminService.createSubclass({
+        class_id: classId,
+        name: subclassForm.value.name,
+        description: subclassForm.value.description
+      })
+      subclassSuccess.value = 'Subclass created successfully!'
+      // Recargar subclases
+      const subRes = await classService.getSubclasses(classId)
+      subclasses.value = subRes.data
+      // Limpiar formulario tras éxito
+      setTimeout(() => {
+        closeSubclassModal()
+      }, 1200)
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        subclassErrors.value = error.response.data.errors
+      } else if (error.response?.data?.message) {
+        subclassGeneralError.value = error.response.data.message
+      } else {
+        subclassGeneralError.value = 'Error creating the subclass'
+      }
     }
   }
-}
 
-const removeSubclass = async (sub) => {
-  if (!confirm(`Are you sure you want to delete the subclass "${sub.name}"?`)) return
-  try {
-    await adminService.deleteSubclass(sub.subclass_id)
-    subclasses.value = subclasses.value.filter(s => s.subclass_id !== sub.subclass_id)
-  } catch (e) {
-    alert('Error deleting the subclass')
+  const removeSubclass = async (sub) => {
+    if (!confirm(`Are you sure you want to delete the subclass "${sub.name}"?`)) return
+    try {
+      await adminService.deleteSubclass(sub.subclass_id)
+      subclasses.value = subclasses.value.filter(s => s.subclass_id !== sub.subclass_id)
+    } catch (e) {
+      console.log('Error deleting the subclass', error)
+    }
   }
-}
 </script>

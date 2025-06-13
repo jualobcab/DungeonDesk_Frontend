@@ -36,74 +36,74 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue'
-    import { useRoute, useRouter, RouterLink } from 'vue-router'
-    import { adminService, classService } from '@/services/api'
+  import { ref, onMounted } from 'vue'
+  import { useRoute, useRouter, RouterLink } from 'vue-router'
+  import { adminService, classService } from '@/services/api'
 
-    const route = useRoute()
-    const router = useRouter()
-    const subclassId = route.params.id
+  const route = useRoute()
+  const router = useRouter()
+  const subclassId = route.params.id
 
-    const form = ref({
-        name: '',
-        description: ''
-    })
-    const errors = ref({})
-    const generalError = ref('')
-    const successMessage = ref('')
+  const form = ref({
+    name: '',
+    description: ''
+  })
+  const errors = ref({})
+  const generalError = ref('')
+  const successMessage = ref('')
 
-    onMounted(async () => {
-        try {
-            // Buscar el class_id de la subclase
-            const classesRes = await classService.getAll()
-            let found = false
-            for (const cls of classesRes.data) {
-            const subsRes = await classService.getSubclasses(cls.class_id)
-            const sub = subsRes.data.find(s => s.subclass_id == subclassId)
-            if (sub) {
-                form.value.name = sub.name
-                form.value.description = sub.description
-                found = true
-                break
-            }
-            }
-            if (!found) {
-            generalError.value = 'Subclass not found'
-            }
-        } catch (e) {
-            generalError.value = 'Error loading subclass data'
+  onMounted(async () => {
+    try {
+      // Buscar el class_id de la subclase
+      const classesRes = await classService.getAll()
+      let found = false
+      for (const cls of classesRes.data) {
+        const subsRes = await classService.getSubclasses(cls.class_id)
+        const sub = subsRes.data.find(s => s.subclass_id == subclassId)
+        if (sub) {
+          form.value.name = sub.name
+          form.value.description = sub.description
+          found = true
+          break
         }
-    })
-
-    const validate = () => {
-        errors.value = {}
-        if (!form.value.name) errors.value.name = 'Name is required'
-        if (form.value.name && form.value.name.length > 255) errors.value.name = 'Name must be at most 255 characters'
-        return Object.keys(errors.value).length === 0
+      }
+      if (!found) {
+        generalError.value = 'Subclass not found'
+      }
+    } catch (e) {
+      generalError.value = 'Error loading subclass data'
     }
+  })
 
-    const submit = async () => {
-        generalError.value = ''
-        successMessage.value = ''
-        if (!validate()) return
+  const validate = () => {
+    errors.value = {}
+    if (!form.value.name) errors.value.name = 'Name is required'
+    if (form.value.name && form.value.name.length > 255) errors.value.name = 'Name must be at most 255 characters'
+    return Object.keys(errors.value).length === 0
+  }
 
-        try {
-            await adminService.updateSubclass(subclassId, {
-                name: form.value.name,
-                description: form.value.description
-            })
-            successMessage.value = 'Subclass updated successfully!'
-            setTimeout(() => {
-                router.push(`/subclasses/${subclassId}`)
-            }, 1200)
-        } catch (error) {
-            if (error.response?.data?.errors) {
-                errors.value = error.response.data.errors
-            } else if (error.response?.data?.message) {
-                generalError.value = error.response.data.message
-            } else {
-                generalError.value = 'Error updating the subclass'
-            }
-        }
+  const submit = async () => {
+    generalError.value = ''
+    successMessage.value = ''
+    if (!validate()) return
+
+    try {
+      await adminService.updateSubclass(subclassId, {
+        name: form.value.name,
+        description: form.value.description
+      })
+      successMessage.value = 'Subclass updated successfully!'
+      setTimeout(() => {
+        router.push(`/subclasses/${subclassId}`)
+      }, 1200)
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        errors.value = error.response.data.errors
+      } else if (error.response?.data?.message) {
+        generalError.value = error.response.data.message
+      } else {
+        generalError.value = 'Error updating the subclass'
+      }
     }
+  }
 </script>

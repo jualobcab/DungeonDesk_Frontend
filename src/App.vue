@@ -1,17 +1,17 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-import { onMounted } from 'vue'
+  import { RouterLink, RouterView } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
+  import { onMounted } from 'vue'
 
-const authStore = useAuthStore()
+  const authStore = useAuthStore()
 
-onMounted(async () => {
-  try {
-    await authStore.initializeAuth()
-  } catch (error) {
-    console.error('Auth initialization failed:', error)
-  }
-})
+  onMounted(async () => {
+    try {
+      await authStore.initializeAuth()
+    } catch (error) {
+      console.error('Auth initialization failed:', error)
+    }
+  })
 </script>
 
 <template>

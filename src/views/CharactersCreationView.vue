@@ -51,96 +51,96 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { characterService, classService, campaignService } from '@/services/api'
+  import { ref, onMounted, computed, watch } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { characterService, classService, campaignService } from '@/services/api'
 
-const router = useRouter()
-const form = ref({
-  name: '',
-  class: '',
-  subclass_id: '',
-  biography: '',
-  campaign_id: ''
-})
-const errors = ref({})
-const generalError = ref('')
-const successMessage = ref('')
+  const router = useRouter()
+  const form = ref({
+    name: '',
+    class: '',
+    subclass_id: '',
+    biography: '',
+    campaign_id: ''
+  })
+  const errors = ref({})
+  const generalError = ref('')
+  const successMessage = ref('')
 
-const classes = ref([])
-const subclasses = ref([])
-const campaigns = ref([])
-const selectedClassObj = computed(() => classes.value.find(cls => cls.class_id == form.value.class))
-const showSubclassSelect = computed(() => selectedClassObj.value && selectedClassObj.value.subclass_level == 1)
+  const classes = ref([])
+  const subclasses = ref([])
+  const campaigns = ref([])
+  const selectedClassObj = computed(() => classes.value.find(cls => cls.class_id == form.value.class))
+  const showSubclassSelect = computed(() => selectedClassObj.value && selectedClassObj.value.subclass_level == 1)
 
-onMounted(async () => {
-  try {
-    const [classRes, campaignRes] = await Promise.all([
-      classService.getAll(),
-      campaignService.getAll()
-    ])
-    classes.value = classRes.data
-    campaigns.value = campaignRes.data
-  } catch (e) {
-    generalError.value = 'Error cargando datos iniciales'
-  }
-})
-
-watch(() => form.value.class, async (newVal) => {
-  form.value.subclass_id = ''
-  if (showSubclassSelect.value) {
+  onMounted(async () => {
     try {
-      const res = await classService.getSubclasses(form.value.class)
-      subclasses.value = res.data
+      const [classRes, campaignRes] = await Promise.all([
+        classService.getAll(),
+        campaignService.getAll()
+      ])
+      classes.value = classRes.data
+      campaigns.value = campaignRes.data
     } catch (e) {
+      generalError.value = 'Error cargando datos iniciales'
+    }
+  })
+
+  watch(() => form.value.class, async (newVal) => {
+    form.value.subclass_id = ''
+    if (showSubclassSelect.value) {
+      try {
+        const res = await classService.getSubclasses(form.value.class)
+        subclasses.value = res.data
+      } catch (e) {
+        subclasses.value = []
+      }
+    } else {
       subclasses.value = []
     }
-  } else {
-    subclasses.value = []
+  })
+
+  const validate = () => {
+    errors.value = {}
+    if (!form.value.name) errors.value.name = 'El nombre es obligatorio'
+    if (!form.value.class) errors.value.class = 'La clase es obligatoria'
+    if (showSubclassSelect.value && !form.value.subclass_id) errors.value.subclass_id = 'La subclase es obligatoria'
+    if (!form.value.campaign_id) errors.value.campaign_id = 'Debes seleccionar una campaña'
+    if (form.value.name && form.value.name.length > 255) errors.value.name = 'El nombre no puede superar 255 caracteres'
+    return Object.keys(errors.value).length === 0
   }
-})
 
-const validate = () => {
-  errors.value = {}
-  if (!form.value.name) errors.value.name = 'El nombre es obligatorio'
-  if (!form.value.class) errors.value.class = 'La clase es obligatoria'
-  if (showSubclassSelect.value && !form.value.subclass_id) errors.value.subclass_id = 'La subclase es obligatoria'
-  if (!form.value.campaign_id) errors.value.campaign_id = 'Debes seleccionar una campaña'
-  if (form.value.name && form.value.name.length > 255) errors.value.name = 'El nombre no puede superar 255 caracteres'
-  return Object.keys(errors.value).length === 0
-}
+  const submit = async () => {
+    generalError.value = ''
+    successMessage.value = ''
+    if (!validate()) return
 
-const submit = async () => {
-  generalError.value = ''
-  successMessage.value = ''
-  if (!validate()) return
-
-  try {
-    // Crear personaje
-    const payload = {
-      name: form.value.name,
-      class: form.value.class,
-      biography: form.value.biography,
-      subclass_id: showSubclassSelect.value ? form.value.subclass_id : null,
-      campaign_id: form.value.campaign_id
-    }
-    await characterService.create(payload)
-    successMessage.value = '¡Personaje creado exitosamente!'
-    setTimeout(() => {
-      router.push('/characters')
-    }, 1200)
-  } catch (error) {
-    if (error.response?.data?.errors) {
-      errors.value = error.response.data.errors
-    } else if (error.response?.data?.message) {
-      generalError.value = error.response.data.message
-    } else {
-      generalError.value = 'Error al crear el personaje'
+    try {
+      // Crear personaje
+      const payload = {
+        name: form.value.name,
+        class: form.value.class,
+        biography: form.value.biography,
+        subclass_id: showSubclassSelect.value ? form.value.subclass_id : null,
+        campaign_id: form.value.campaign_id
+      }
+      await characterService.create(payload)
+      successMessage.value = '¡Personaje creado exitosamente!'
+      setTimeout(() => {
+        router.push('/characters')
+      }, 1200)
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        errors.value = error.response.data.errors
+      } else if (error.response?.data?.message) {
+        generalError.value = error.response.data.message
+      } else {
+        generalError.value = 'Error al crear el personaje'
+      }
     }
   }
-}
 
-const onClassChange = () => {
-  form.value.subclass_id = ''
-}
+  const onClassChange = () => {
+    form.value.subclass_id = ''
+  }
 </script>

@@ -251,162 +251,162 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue'
-    import { useRoute, useRouter, RouterLink } from 'vue-router'
-    import { campaignService } from '@/services/api'
+  import { ref, onMounted } from 'vue'
+  import { useRoute, useRouter, RouterLink } from 'vue-router'
+  import { campaignService } from '@/services/api'
 
-    const route = useRoute()
-    const router = useRouter()
-    const campaign = ref({
-        id_campaign: '',
-        name: '',
-        description: '',
-        characters: []
-    })
-    const showDeleteModal = ref(false)
-    const showDiaryModal = ref(false)
-    const diaryEntries = ref([])
+  const route = useRoute()
+  const router = useRouter()
+  const campaign = ref({
+    id_campaign: '',
+    name: '',
+    description: '',
+    characters: []
+  })
+  const showDeleteModal = ref(false)
+  const showDiaryModal = ref(false)
+  const diaryEntries = ref([])
 
-    const showDeleteDiaryModal = ref(false)
-    const diaryToDelete = ref(null)
-    const showCreateDiaryModal = ref(false)
-    const createDiaryForm = ref({
-        id_character: '',
-        entry: '',
-        date: ''
-    })
-    const createDiaryError = ref('')
-    const editingDiaryId = ref(null)
-    const editDiaryForm = ref({
-        id_character: '',
-        entry: '',
-        date: ''
-    })
-    const editDiaryError = ref('')
+  const showDeleteDiaryModal = ref(false)
+  const diaryToDelete = ref(null)
+  const showCreateDiaryModal = ref(false)
+  const createDiaryForm = ref({
+    id_character: '',
+    entry: '',
+    date: ''
+  })
+  const createDiaryError = ref('')
+  const editingDiaryId = ref(null)
+  const editDiaryForm = ref({
+    id_character: '',
+    entry: '',
+    date: ''
+  })
+  const editDiaryError = ref('')
 
-    const isLastClass = (classes, cls) => {
-        return classes[classes.length - 1] === cls
+  const isLastClass = (classes, cls) => {
+    return classes[classes.length - 1] === cls
+  }
+
+  const fetchCampaign = async () => {
+    try {
+      const res = await campaignService.getOne(route.params.id)
+      if (!res.data || !res.data.id_campaign) {
+      router.push('/campaigns')
+        return
+      }
+      campaign.value = res.data
+    } catch (e) {
+      router.push('/campaigns')
     }
+  }
 
-    const fetchCampaign = async () => {
-        try {
-            const res = await campaignService.getOne(route.params.id)
-            if (!res.data || !res.data.id_campaign) {
-            router.push('/campaigns')
-                return
-            }
-            campaign.value = res.data
-        } catch (e) {
-            router.push('/campaigns')
-        }
+  const fetchDiary = async () => {
+    try {
+      const res = await campaignService.getDiary(campaign.value.id_campaign)
+      diaryEntries.value = res.data
+    } catch (e) {
+      diaryEntries.value = []
     }
+  }
 
-    const fetchDiary = async () => {
-        try {
-            const res = await campaignService.getDiary(campaign.value.id_campaign)
-            diaryEntries.value = res.data
-        } catch (e) {
-            diaryEntries.value = []
-        }
+  const openDiaryModal = async () => {
+    showDiaryModal.value = true
+    await fetchDiary()
+  }
+
+  // --- Diary CRUD ---
+  const openDeleteDiaryModal = (entry) => {
+    diaryToDelete.value = entry
+    showDeleteDiaryModal.value = true
+  }
+
+  const confirmDeleteDiary = async () => {
+    if (!diaryToDelete.value) return
+    try {
+      await campaignService.deleteDiaryEntry(campaign.value.id_campaign, diaryToDelete.value.entry_id)
+      diaryEntries.value = diaryEntries.value.filter(e => e.entry_id !== diaryToDelete.value.entry_id)
+      showDeleteDiaryModal.value = false
+      diaryToDelete.value = null
+    } catch (e) {
+      showDeleteDiaryModal.value = false
+      diaryToDelete.value = null
+      console.log('Error al borrar la entrada', error)
     }
+  }
 
-    const openDiaryModal = async () => {
-        showDiaryModal.value = true
-        await fetchDiary()
+  const isEditingDiary = (entryId) => editingDiaryId.value === entryId
+
+  const startEditDiary = (entry) => {
+    editingDiaryId.value = entry.entry_id
+    editDiaryForm.value = {
+      id_character: campaign.value.characters.find(c => c.name === entry.character_name)?.id_character || '',
+      entry: entry.entry,
+      date: entry.date
     }
+    editDiaryError.value = ''
+  }
 
-    // --- Diary CRUD ---
-    const openDeleteDiaryModal = (entry) => {
-        diaryToDelete.value = entry
-        showDeleteDiaryModal.value = true
+  const cancelEditDiary = () => {
+    editingDiaryId.value = null
+    editDiaryError.value = ''
+  }
+
+  const submitEditDiary = async (entryId) => {
+    editDiaryError.value = ''
+    if (!editDiaryForm.value.id_character || !editDiaryForm.value.entry || !editDiaryForm.value.date) {
+      editDiaryError.value = 'Todos los campos son obligatorios'
+      return
     }
-
-    const confirmDeleteDiary = async () => {
-        if (!diaryToDelete.value) return
-        try {
-            await campaignService.deleteDiaryEntry(campaign.value.id_campaign, diaryToDelete.value.entry_id)
-            diaryEntries.value = diaryEntries.value.filter(e => e.entry_id !== diaryToDelete.value.entry_id)
-            showDeleteDiaryModal.value = false
-            diaryToDelete.value = null
-        } catch (e) {
-            showDeleteDiaryModal.value = false
-            diaryToDelete.value = null
-            alert('Error al borrar la entrada')
-        }
+    // Comprobar que el personaje pertenece a la campaña
+    if (!campaign.value.characters.some(c => c.id_character == editDiaryForm.value.id_character)) {
+      editDiaryError.value = 'El personaje no pertenece a la campaña'
+      return
     }
-
-    const isEditingDiary = (entryId) => editingDiaryId.value === entryId
-
-    const startEditDiary = (entry) => {
-        editingDiaryId.value = entry.entry_id
-        editDiaryForm.value = {
-            id_character: campaign.value.characters.find(c => c.name === entry.character_name)?.id_character || '',
-            entry: entry.entry,
-            date: entry.date
+    try {
+      await campaignService.updateDiaryEntry(
+        campaign.value.id_campaign,
+        entryId,
+        {
+          id_character: editDiaryForm.value.id_character,
+          entry: editDiaryForm.value.entry,
+          date: editDiaryForm.value.date
         }
-        editDiaryError.value = ''
+      )
+      await fetchDiary()
+      editingDiaryId.value = null
+    } catch (e) {
+      editDiaryError.value = 'Error al actualizar la entrada'
     }
+  }
 
-    const cancelEditDiary = () => {
-        editingDiaryId.value = null
-        editDiaryError.value = ''
+  const submitCreateDiary = async () => {
+    createDiaryError.value = ''
+    if (!createDiaryForm.value.id_character || !createDiaryForm.value.entry || !createDiaryForm.value.date) {
+      createDiaryError.value = 'Todos los campos son obligatorios'
+      return
     }
-
-    const submitEditDiary = async (entryId) => {
-        editDiaryError.value = ''
-        if (!editDiaryForm.value.id_character || !editDiaryForm.value.entry || !editDiaryForm.value.date) {
-            editDiaryError.value = 'Todos los campos son obligatorios'
-            return
-        }
-        // Comprobar que el personaje pertenece a la campaña
-        if (!campaign.value.characters.some(c => c.id_character == editDiaryForm.value.id_character)) {
-            editDiaryError.value = 'El personaje no pertenece a la campaña'
-            return
-        }
-        try {
-            await campaignService.updateDiaryEntry(
-            campaign.value.id_campaign,
-            entryId,
-            {
-                id_character: editDiaryForm.value.id_character,
-                entry: editDiaryForm.value.entry,
-                date: editDiaryForm.value.date
-            }
-            )
-            await fetchDiary()
-            editingDiaryId.value = null
-        } catch (e) {
-            editDiaryError.value = 'Error al actualizar la entrada'
-        }
+    // Comprobar que el personaje pertenece a la campaña
+    if (!campaign.value.characters.some(c => c.id_character == createDiaryForm.value.id_character)) {
+      createDiaryError.value = 'El personaje no pertenece a la campaña'
+      return
     }
-
-    const submitCreateDiary = async () => {
-        createDiaryError.value = ''
-        if (!createDiaryForm.value.id_character || !createDiaryForm.value.entry || !createDiaryForm.value.date) {
-            createDiaryError.value = 'Todos los campos son obligatorios'
-            return
+    try {
+      await campaignService.createDiaryEntry(
+        campaign.value.id_campaign,
+        {
+          id_character: createDiaryForm.value.id_character,
+          entry: createDiaryForm.value.entry,
+          date: createDiaryForm.value.date
         }
-        // Comprobar que el personaje pertenece a la campaña
-        if (!campaign.value.characters.some(c => c.id_character == createDiaryForm.value.id_character)) {
-            createDiaryError.value = 'El personaje no pertenece a la campaña'
-            return
-        }
-        try {
-            await campaignService.createDiaryEntry(
-            campaign.value.id_campaign,
-            {
-                id_character: createDiaryForm.value.id_character,
-                entry: createDiaryForm.value.entry,
-                date: createDiaryForm.value.date
-            }
-            )
-            await fetchDiary()
-            showCreateDiaryModal.value = false
-            createDiaryForm.value = { id_character: '', entry: '', date: '' }
-        } catch (e) {
-            createDiaryError.value = 'Error al crear la entrada'
-        }
+      )
+      await fetchDiary()
+      showCreateDiaryModal.value = false
+      createDiaryForm.value = { id_character: '', entry: '', date: '' }
+    } catch (e) {
+      createDiaryError.value = 'Error al crear la entrada'
     }
+  }
 
-    onMounted(fetchCampaign)
+  onMounted(fetchCampaign)
 </script>

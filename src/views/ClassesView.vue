@@ -115,7 +115,7 @@
       showDeleteModal.value = false
       classToDelete.value = null
     } catch (error) {
-      alert('Error deleting the class')
+      console.log('Error deleting the class', error)
       showDeleteModal.value = false
       classToDelete.value = null
     }

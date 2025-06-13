@@ -36,63 +36,63 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter, RouterLink } from 'vue-router'
-import { campaignService } from '@/services/api'
+  import { ref, onMounted } from 'vue'
+  import { useRoute, useRouter, RouterLink } from 'vue-router'
+  import { campaignService } from '@/services/api'
 
-const route = useRoute()
-const router = useRouter()
-const form = ref({
-  name: '',
-  description: ''
-})
-const errors = ref({})
-const generalError = ref('')
-const successMessage = ref('')
+  const route = useRoute()
+  const router = useRouter()
+  const form = ref({
+    name: '',
+    description: ''
+  })
+  const errors = ref({})
+  const generalError = ref('')
+  const successMessage = ref('')
 
-onMounted(async () => {
-  try {
-    const res = await campaignService.getOne(route.params.id)
-    if (!res.data || !res.data.id_campaign) {
+  onMounted(async () => {
+    try {
+      const res = await campaignService.getOne(route.params.id)
+      if (!res.data || !res.data.id_campaign) {
+        router.push('/campaigns')
+        return
+      }
+      form.value.name = res.data.name
+      form.value.description = res.data.description
+    } catch (e) {
       router.push('/campaigns')
-      return
     }
-    form.value.name = res.data.name
-    form.value.description = res.data.description
-  } catch (e) {
-    router.push('/campaigns')
+  })
+
+  const validate = () => {
+    errors.value = {}
+    if (!form.value.name) errors.value.name = 'El nombre es obligatorio'
+    if (form.value.name && form.value.name.length > 255) errors.value.name = 'El nombre no puede superar 255 caracteres'
+    return Object.keys(errors.value).length === 0
   }
-})
 
-const validate = () => {
-  errors.value = {}
-  if (!form.value.name) errors.value.name = 'El nombre es obligatorio'
-  if (form.value.name && form.value.name.length > 255) errors.value.name = 'El nombre no puede superar 255 caracteres'
-  return Object.keys(errors.value).length === 0
-}
+  const submit = async () => {
+    generalError.value = ''
+    successMessage.value = ''
+    if (!validate()) return
 
-const submit = async () => {
-  generalError.value = ''
-  successMessage.value = ''
-  if (!validate()) return
-
-  try {
-    await campaignService.update(route.params.id, {
-      name: form.value.name,
-      description: form.value.description
-    })
-    successMessage.value = '¡Campaña actualizada exitosamente!'
-    setTimeout(() => {
-      router.push('/campaigns')
-    }, 1200)
-  } catch (error) {
-    if (error.response?.data?.errors) {
-      errors.value = error.response.data.errors
-    } else if (error.response?.data?.message) {
-      generalError.value = error.response.data.message
-    } else {
-      generalError.value = 'Error al actualizar la campaña'
+    try {
+      await campaignService.update(route.params.id, {
+        name: form.value.name,
+        description: form.value.description
+      })
+      successMessage.value = '¡Campaña actualizada exitosamente!'
+      setTimeout(() => {
+        router.push('/campaigns')
+      }, 1200)
+    } catch (error) {
+      if (error.response?.data?.errors) {
+        errors.value = error.response.data.errors
+      } else if (error.response?.data?.message) {
+        generalError.value = error.response.data.message
+      } else {
+        generalError.value = 'Error al actualizar la campaña'
+      }
     }
   }
-}
 </script>

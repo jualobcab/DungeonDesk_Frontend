@@ -91,60 +91,60 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { adminService } from '@/services/api'
-import { RouterLink } from 'vue-router'
+  import { ref, computed, onMounted } from 'vue'
+  import { adminService } from '@/services/api'
+  import { RouterLink } from 'vue-router'
 
-const features = ref([])
-const showDeleteModal = ref(false)
-const featureToDelete = ref(null)
-const currentPage = ref(1)
-const pageSize = 9
+  const features = ref([])
+  const showDeleteModal = ref(false)
+  const featureToDelete = ref(null)
+  const currentPage = ref(1)
+  const pageSize = 9
 
-const sortedFeatures = computed(() =>
-  [...features.value].sort((a, b) => a.name.localeCompare(b.name))
-)
+  const sortedFeatures = computed(() =>
+    [...features.value].sort((a, b) => a.name.localeCompare(b.name))
+  )
 
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(sortedFeatures.value.length / pageSize))
-)
+  const totalPages = computed(() =>
+    Math.max(1, Math.ceil(sortedFeatures.value.length / pageSize))
+  )
 
-const paginatedFeatures = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return sortedFeatures.value.slice(start, start + pageSize)
-})
+  const paginatedFeatures = computed(() => {
+    const start = (currentPage.value - 1) * pageSize
+    return sortedFeatures.value.slice(start, start + pageSize)
+  })
 
-const openDeleteModal = (feature) => {
-  featureToDelete.value = feature
-  showDeleteModal.value = true
-}
+  const openDeleteModal = (feature) => {
+    featureToDelete.value = feature
+    showDeleteModal.value = true
+  }
 
-const confirmDelete = async () => {
-  if (!featureToDelete.value) return
-  try {
-    await adminService.deleteFeature(featureToDelete.value.feature_id)
-    features.value = features.value.filter(
-      f => f.feature_id !== featureToDelete.value.feature_id
-    )
-    showDeleteModal.value = false
-    featureToDelete.value = null
-    // Si la página actual se queda vacía, retrocede una página si es posible
-    if (paginatedFeatures.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
+  const confirmDelete = async () => {
+    if (!featureToDelete.value) return
+    try {
+      await adminService.deleteFeature(featureToDelete.value.feature_id)
+      features.value = features.value.filter(
+        f => f.feature_id !== featureToDelete.value.feature_id
+      )
+      showDeleteModal.value = false
+      featureToDelete.value = null
+      // Si la página actual se queda vacía, retrocede una página si es posible
+      if (paginatedFeatures.value.length === 0 && currentPage.value > 1) {
+        currentPage.value--
+      }
+    } catch (error) {
+      console.error('Error al borrar la feature', error)
+      showDeleteModal.value = false
+      featureToDelete.value = null
     }
-  } catch (error) {
-    alert('Error al borrar la feature')
-    showDeleteModal.value = false
-    featureToDelete.value = null
   }
-}
 
-onMounted(async () => {
-  try {
-    const res = await adminService.getFeatures()
-    features.value = res.data
-  } catch (error) {
-    console.error('Error loading features:', error)
-  }
-})
+  onMounted(async () => {
+    try {
+      const res = await adminService.getFeatures()
+      features.value = res.data
+    } catch (error) {
+      console.error('Error loading features:', error)
+    }
+  })
 </script>

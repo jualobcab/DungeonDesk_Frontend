@@ -62,62 +62,62 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+  import { ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter()
-const authStore = useAuthStore()
-const form = ref({
-  username: '',
-  email: '',
-  password: '',
-})
-const errors = ref({})
-const isLoading = ref(false)
+  const router = useRouter()
+  const authStore = useAuthStore()
+  const form = ref({
+    username: '',
+    email: '',
+    password: '',
+  })
+  const errors = ref({})
+  const isLoading = ref(false)
 
-const handleRegister = async () => {
-  errors.value = {}
-  isLoading.value = true
+  const handleRegister = async () => {
+    errors.value = {}
+    isLoading.value = true
 
-  try {
-    const response = await authStore.register(form.value)
-    console.log('Registration response:', response)
+    try {
+      const response = await authStore.register(form.value)
+      console.log('Registration response:', response)
 
-    if (response.data?.data?.token) {
-      authStore.setAuth(response.data.data.token, response.data.data.user)
-      router.push('/').then(() => window.location.reload())
-    } else if (response.data?.token) {
-      authStore.setAuth(response.data.token, response.data.user)
-      router.push('/').then(() => window.location.reload())
-    } else {
-      errors.value = { general: ['Registration succesful but login failed, please try again.'] }
-      router.push('/login')
+      if (response.data?.data?.token) {
+        authStore.setAuth(response.data.data.token, response.data.data.user)
+        router.push('/').then(() => window.location.reload())
+      } else if (response.data?.token) {
+        authStore.setAuth(response.data.token, response.data.user)
+        router.push('/').then(() => window.location.reload())
+      } else {
+        errors.value = { general: ['Registration succesful but login failed, please try again.'] }
+        router.push('/login')
+      }
+    } catch (err) {
+      console.error('Registration error:', err.response)
+
+      if (err.response?.data?.errors) {
+        errors.value = err.response.data.errors
+      } else if (err.response?.status === 422) {
+        errors.value = {
+          general: ['Please check your input and try again']
+        }
+      } else if (err.response?.status === 409) {
+        errors.value = {
+          user_email: ['This email is already registered']
+        }
+      } else {
+        errors.value = {
+          general: [
+            err.response?.data?.message ||
+            err.message ||
+            'Registration failed. Please try again.'
+          ]
+        }
+      }
+    } finally {
+      isLoading.value = false
     }
-  } catch (err) {
-    console.error('Registration error:', err.response)
-
-    if (err.response?.data?.errors) {
-      errors.value = err.response.data.errors
-    } else if (err.response?.status === 422) {
-      errors.value = {
-        general: ['Please check your input and try again']
-      }
-    } else if (err.response?.status === 409) {
-      errors.value = {
-        user_email: ['This email is already registered']
-      }
-    } else {
-      errors.value = {
-        general: [
-          err.response?.data?.message ||
-          err.message ||
-          'Registration failed. Please try again.'
-        ]
-      }
-    }
-  } finally {
-    isLoading.value = false
   }
-}
 </script>

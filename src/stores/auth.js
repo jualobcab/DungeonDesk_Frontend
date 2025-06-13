@@ -63,7 +63,7 @@ export const useAuthStore = defineStore('auth', {
       router.push('/'); 
     },
 
-    // Registera new user
+    // Register a new user
     async register(credentials) {
       try {
         this.isAuthLoading = true; // Set loading to true at the start of registration

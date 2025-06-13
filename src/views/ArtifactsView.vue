@@ -150,103 +150,103 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { equipmentService, adminService } from '@/services/api'
-import { RouterLink, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+  import { ref, computed, onMounted } from 'vue'
+  import { equipmentService, adminService } from '@/services/api'
+  import { RouterLink, useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
-const router = useRouter()
+  const authStore = useAuthStore()
+  const router = useRouter()
 
-const buttons = [
-  { name: 'armors', label: 'Armors', to: '/equipment/armors' },
-  { name: 'weapons', label: 'Weapons', to: '/equipment/weapons' },
-  { name: 'artifacts', label: 'Artifacts', to: '/equipment/artifacts' }
-]
+  const buttons = [
+    { name: 'armors', label: 'Armors', to: '/equipment/armors' },
+    { name: 'weapons', label: 'Weapons', to: '/equipment/weapons' },
+    { name: 'artifacts', label: 'Artifacts', to: '/equipment/artifacts' }
+  ]
 
-const artifacts = ref([])
-const currentPage = ref(1)
-const pageSize = 10
+  const artifacts = ref([])
+  const currentPage = ref(1)
+  const pageSize = 10
 
-const showDeleteModal = ref(false)
-const artifactToDelete = ref(null)
+  const showDeleteModal = ref(false)
+  const artifactToDelete = ref(null)
 
-const rarityClass = (rarity) => {
-  switch ((rarity || '').toLowerCase()) {
-    case 'common':
-      return 'text-gray-300'
-    case 'uncommon':
-      return 'text-green-400'
-    case 'rare':
-      return 'text-blue-400'
-    case 'very rare':
-      return 'text-purple-400'
-    case 'legendary':
-      return 'text-yellow-400'
-    case 'artifact':
-      return 'text-amber-500'
-    default:
-      return 'text-gray-200'
-  }
-}
-
-const getArtifactIcon = (type) => {
-  if (!type) return new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
-  const fileName = type.toLowerCase().replace(/\s+/g, '-')
-  return new URL(`../assets/img/equipmentIcons/${fileName}.jpg`, import.meta.url).href
-}
-
-const onImgError = (event) => {
-  event.target.src = new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
-}
-
-// Ordenar alfabéticamente por name
-const sortedArtifacts = computed(() =>
-  [...artifacts.value].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-)
-
-const totalPages = computed(() => Math.ceil(sortedArtifacts.value.length / pageSize))
-
-const paginatedArtifacts = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return sortedArtifacts.value.slice(start, start + pageSize)
-})
-
-const openDeleteModal = (item) => {
-  artifactToDelete.value = item
-  showDeleteModal.value = true
-}
-
-const confirmDelete = async () => {
-  if (!artifactToDelete.value) return
-  try {
-    await adminService.deleteArtifact(artifactToDelete.value.artifact_id)
-    artifacts.value = artifacts.value.filter(
-      a => a.artifact_id !== artifactToDelete.value.artifact_id
-    )
-    showDeleteModal.value = false
-    artifactToDelete.value = null
-    // Si la página actual se queda vacía, retrocede una página si es posible
-    if (paginatedArtifacts.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
+  const rarityClass = (rarity) => {
+    switch ((rarity || '').toLowerCase()) {
+      case 'common':
+        return 'text-gray-300'
+      case 'uncommon':
+        return 'text-green-400'
+      case 'rare':
+        return 'text-blue-400'
+      case 'very rare':
+        return 'text-purple-400'
+      case 'legendary':
+        return 'text-yellow-400'
+      case 'artifact':
+        return 'text-amber-500'
+      default:
+        return 'text-gray-200'
     }
-  } catch (error) {
-    alert('Error al borrar el artifact')
-    showDeleteModal.value = false
-    artifactToDelete.value = null
   }
-}
 
-const editArtifact = (item) => {
-  router.push(`/equipment/${item.equipment_id}/edit`)
-}
-
-onMounted(async () => {
-  try {
-    const res = await equipmentService.getArtifacts()
-    artifacts.value = res.data
-  } catch (error) {
-    console.error('Error loading artifacts:', error)
+  const getArtifactIcon = (type) => {
+    if (!type) return new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
+    const fileName = type.toLowerCase().replace(/\s+/g, '-')
+    return new URL(`../assets/img/equipmentIcons/${fileName}.jpg`, import.meta.url).href
   }
-})
+
+  const onImgError = (event) => {
+    event.target.src = new URL('../assets/img/equipmentIcons/default.jpg', import.meta.url).href
+  }
+
+  // Ordenar alfabéticamente por name
+  const sortedArtifacts = computed(() =>
+    [...artifacts.value].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  )
+
+  const totalPages = computed(() => Math.ceil(sortedArtifacts.value.length / pageSize))
+
+  const paginatedArtifacts = computed(() => {
+    const start = (currentPage.value - 1) * pageSize
+    return sortedArtifacts.value.slice(start, start + pageSize)
+  })
+
+  const openDeleteModal = (item) => {
+    artifactToDelete.value = item
+    showDeleteModal.value = true
+  }
+
+  const confirmDelete = async () => {
+    if (!artifactToDelete.value) return
+    try {
+      await adminService.deleteArtifact(artifactToDelete.value.artifact_id)
+      artifacts.value = artifacts.value.filter(
+        a => a.artifact_id !== artifactToDelete.value.artifact_id
+      )
+      showDeleteModal.value = false
+      artifactToDelete.value = null
+      // Si la página actual se queda vacía, retrocede una página si es posible
+      if (paginatedArtifacts.value.length === 0 && currentPage.value > 1) {
+        currentPage.value--
+      }
+    } catch (error) {
+      console.log('Error al borrar el artifact', error)
+      showDeleteModal.value = false
+      artifactToDelete.value = null
+    }
+  }
+
+  const editArtifact = (item) => {
+    router.push(`/equipment/${item.equipment_id}/edit`)
+  }
+
+  onMounted(async () => {
+    try {
+      const res = await equipmentService.getArtifacts()
+      artifacts.value = res.data
+    } catch (error) {
+      console.error('Error loading artifacts:', error)
+    }
+  })
 </script>

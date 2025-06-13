@@ -155,97 +155,97 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { equipmentService, adminService } from '@/services/api'
-import { RouterLink, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+  import { ref, computed, onMounted } from 'vue'
+  import { equipmentService, adminService } from '@/services/api'
+  import { RouterLink, useRouter } from 'vue-router'
+  import { useAuthStore } from '@/stores/auth'
 
-const authStore = useAuthStore()
-const router = useRouter()
+  const authStore = useAuthStore()
+  const router = useRouter()
 
-const buttons = [
-  { name: 'armors', label: 'Armors', to: '/equipment/armors' },
-  { name: 'weapons', label: 'Weapons', to: '/equipment/weapons' },
-  { name: 'artifacts', label: 'Artifacts', to: '/equipment/artifacts' }
-]
+  const buttons = [
+    { name: 'armors', label: 'Armors', to: '/equipment/armors' },
+    { name: 'weapons', label: 'Weapons', to: '/equipment/weapons' },
+    { name: 'artifacts', label: 'Artifacts', to: '/equipment/artifacts' }
+  ]
 
-const weapons = ref([])
-const currentPage = ref(1)
-const pageSize = 10
+  const weapons = ref([])
+  const currentPage = ref(1)
+  const pageSize = 10
 
-const showDeleteModal = ref(false)
-const weaponToDelete = ref(null)
+  const showDeleteModal = ref(false)
+  const weaponToDelete = ref(null)
 
-const rarityClass = (rarity) => {
-  switch ((rarity || '').toLowerCase()) {
-    case 'common':
-      return 'text-gray-300'
-    case 'uncommon':
-      return 'text-green-400'
-    case 'rare':
-      return 'text-blue-400'
-    case 'very rare':
-      return 'text-purple-400'
-    case 'legendary':
-      return 'text-yellow-400'
-    case 'artifact':
-      return 'text-amber-500'
-    default:
-      return 'text-gray-200'
-  }
-}
-
-const onImgError = (event) => {
-  event.target.src = '/assets/img/equipmentIcons/weapon.jpg'
-}
-
-// Ordenar alfabéticamente por name
-const sortedWeapons = computed(() =>
-  [...weapons.value].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-)
-
-const totalPages = computed(() => Math.ceil(sortedWeapons.value.length / pageSize))
-
-const paginatedWeapons = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return sortedWeapons.value.slice(start, start + pageSize)
-})
-
-const openDeleteModal = (item) => {
-  weaponToDelete.value = item
-  showDeleteModal.value = true
-}
-
-const confirmDelete = async () => {
-  if (!weaponToDelete.value) return
-  try {
-    await adminService.deleteWeapon(weaponToDelete.value.weapon_id)
-    weapons.value = weapons.value.filter(
-      w => w.weapon_id !== weaponToDelete.value.weapon_id
-    )
-    showDeleteModal.value = false
-    weaponToDelete.value = null
-    // Si la página actual se queda vacía, retrocede una página si es posible
-    if (paginatedWeapons.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
+  const rarityClass = (rarity) => {
+    switch ((rarity || '').toLowerCase()) {
+      case 'common':
+        return 'text-gray-300'
+      case 'uncommon':
+        return 'text-green-400'
+      case 'rare':
+        return 'text-blue-400'
+      case 'very rare':
+        return 'text-purple-400'
+      case 'legendary':
+        return 'text-yellow-400'
+      case 'artifact':
+        return 'text-amber-500'
+      default:
+        return 'text-gray-200'
     }
-  } catch (error) {
-    alert('Error al borrar el arma')
-    showDeleteModal.value = false
-    weaponToDelete.value = null
   }
-}
 
-const editWeapon = (item) => {
-  router.push(`/equipment/${item.equipment_id}/edit`)
-}
-
-onMounted(async () => {
-  try {
-    const res = await equipmentService.getWeapons()
-    weapons.value = res.data
-  } catch (error) {
-    console.error('Error loading weapons:', error)
+  const onImgError = (event) => {
+    event.target.src = '/assets/img/equipmentIcons/weapon.jpg'
   }
-})
+
+  // Ordenar alfabéticamente por name
+  const sortedWeapons = computed(() =>
+    [...weapons.value].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  )
+
+  const totalPages = computed(() => Math.ceil(sortedWeapons.value.length / pageSize))
+
+  const paginatedWeapons = computed(() => {
+    const start = (currentPage.value - 1) * pageSize
+    return sortedWeapons.value.slice(start, start + pageSize)
+  })
+
+  const openDeleteModal = (item) => {
+    weaponToDelete.value = item
+    showDeleteModal.value = true
+  }
+
+  const confirmDelete = async () => {
+    if (!weaponToDelete.value) return
+    try {
+      await adminService.deleteWeapon(weaponToDelete.value.weapon_id)
+      weapons.value = weapons.value.filter(
+        w => w.weapon_id !== weaponToDelete.value.weapon_id
+      )
+      showDeleteModal.value = false
+      weaponToDelete.value = null
+      // Si la página actual se queda vacía, retrocede una página si es posible
+      if (paginatedWeapons.value.length === 0 && currentPage.value > 1) {
+        currentPage.value--
+      }
+    } catch (error) {
+      console.error('Error al borrar el arma', error)
+      showDeleteModal.value = false
+      weaponToDelete.value = null
+    }
+  }
+
+  const editWeapon = (item) => {
+    router.push(`/equipment/${item.equipment_id}/edit`)
+  }
+
+  onMounted(async () => {
+    try {
+      const res = await equipmentService.getWeapons()
+      weapons.value = res.data
+    } catch (error) {
+      console.error('Error loading weapons:', error)
+    }
+  })
 </script>

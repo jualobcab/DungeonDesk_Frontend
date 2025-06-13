@@ -83,42 +83,42 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue'
-    import { campaignService } from '@/services/api'
-    import { RouterLink } from 'vue-router'
+  import { ref, onMounted } from 'vue'
+  import { campaignService } from '@/services/api'
+  import { RouterLink } from 'vue-router'
 
-    const campaigns = ref([])
-    const showDeleteModal = ref(false)
-    const campaignToDelete = ref(null)
+  const campaigns = ref([])
+  const showDeleteModal = ref(false)
+  const campaignToDelete = ref(null)
 
-    const openDeleteModal = (campaign) => {
-        campaignToDelete.value = campaign
-        showDeleteModal.value = true
+  const openDeleteModal = (campaign) => {
+    campaignToDelete.value = campaign
+    showDeleteModal.value = true
+  }
+
+  const confirmDelete = async () => {
+    if (!campaignToDelete.value) return
+    try {
+      await campaignService.delete(campaignToDelete.value.id_campaign)
+      // Elimina la campaña del array local sin recargar toda la página
+      campaigns.value = campaigns.value.filter(
+        c => c.id_campaign !== campaignToDelete.value.id_campaign
+      )
+      showDeleteModal.value = false
+      campaignToDelete.value = null
+    } catch (error) {
+      console.log('Error al borrar la campañ', error)
+      showDeleteModal.value = false
+      campaignToDelete.value = null
     }
+  }
 
-    const confirmDelete = async () => {
-        if (!campaignToDelete.value) return
-        try {
-            await campaignService.delete(campaignToDelete.value.id_campaign)
-            // Elimina la campaña del array local sin recargar toda la página
-            campaigns.value = campaigns.value.filter(
-            c => c.id_campaign !== campaignToDelete.value.id_campaign
-            )
-            showDeleteModal.value = false
-            campaignToDelete.value = null
-        } catch (error) {
-            alert('Error al borrar la campaña')
-            showDeleteModal.value = false
-            campaignToDelete.value = null
-        }
+  onMounted(async () => {
+    try {
+      const res = await campaignService.getAll()
+      campaigns.value = res.data
+    } catch (error) {
+      console.error('Error loading campaigns:', error)
     }
-
-    onMounted(async () => {
-        try {
-            const res = await campaignService.getAll()
-            campaigns.value = res.data
-        } catch (error) {
-            console.error('Error loading campaigns:', error)
-        }
-    })
+  })
 </script>

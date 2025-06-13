@@ -84,42 +84,42 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { characterService } from '@/services/api'
-import { RouterLink } from 'vue-router'
+  import { ref, onMounted } from 'vue'
+  import { characterService } from '@/services/api'
+  import { RouterLink } from 'vue-router'
 
-const characters = ref([])
-const showDeleteModal = ref(false)
-const characterToDelete = ref(null)
+  const characters = ref([])
+  const showDeleteModal = ref(false)
+  const characterToDelete = ref(null)
 
-const openDeleteModal = (character) => {
-  characterToDelete.value = character
-  showDeleteModal.value = true
-}
-
-const confirmDelete = async () => {
-  if (!characterToDelete.value) return
-  try {
-    await characterService.delete(characterToDelete.value.id_character)
-    // Elimina el personaje del array local sin recargar toda la página
-    characters.value = characters.value.filter(
-      c => c.id_character !== characterToDelete.value.id_character
-    )
-    showDeleteModal.value = false
-    characterToDelete.value = null
-  } catch (error) {
-    alert('Error al borrar el personaje')
-    showDeleteModal.value = false
-    characterToDelete.value = null
+  const openDeleteModal = (character) => {
+    characterToDelete.value = character
+    showDeleteModal.value = true
   }
-}
 
-onMounted(async () => {
-  try {
-    const res = await characterService.getAll()
-    characters.value = res.data
-  } catch (error) {
-    console.error('Error loading characters:', error)
+  const confirmDelete = async () => {
+    if (!characterToDelete.value) return
+    try {
+      await characterService.delete(characterToDelete.value.id_character)
+      // Elimina el personaje del array local sin recargar toda la página
+      characters.value = characters.value.filter(
+        c => c.id_character !== characterToDelete.value.id_character
+      )
+      showDeleteModal.value = false
+      characterToDelete.value = null
+    } catch (error) {
+      console.log('Error al borrar el personaje', error)
+      showDeleteModal.value = false
+      characterToDelete.value = null
+    }
   }
-})
+
+  onMounted(async () => {
+    try {
+      const res = await characterService.getAll()
+      characters.value = res.data
+    } catch (error) {
+      console.error('Error loading characters:', error)
+    }
+  })
 </script>

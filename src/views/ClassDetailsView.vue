@@ -139,7 +139,7 @@
       showDeleteModal.value = false
       router.push('/classes')
     } catch (error) {
-      alert('Error deleting the class')
+      console.log('Error deleting the class', error)
       showDeleteModal.value = false
     }
   }

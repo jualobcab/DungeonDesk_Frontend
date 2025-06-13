@@ -131,6 +131,7 @@ export const adminService = {
   deleteFeature: (id) => api.delete(`/admin/feature/${id}/delete`),
   deleteSubclass: (id) => api.delete(`/admin/subclass/${id}/delete`),
   deleteClass: (id) => api.delete(`/admin/class/${id}/delete`),
+  deleteFeatureFromClass: (data) => api.delete(`/admin/feature/${data.feature_id}/delete`, { data }),
 };
 
 export default api;

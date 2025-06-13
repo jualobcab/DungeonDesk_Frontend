@@ -575,7 +575,7 @@
       showDeleteModal.value = false
       router.push('/characters')
     } catch (error) {
-      alert('Error al borrar el personaje')
+      console.log('Error al borrar el personaje', error)
       showDeleteModal.value = false
     }
   }

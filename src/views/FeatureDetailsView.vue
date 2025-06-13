@@ -87,43 +87,43 @@
 </template>
 
 <script setup>
-    import { ref, onMounted } from 'vue'
-    import { useRoute, useRouter } from 'vue-router'
-    import { adminService } from '@/services/api'
+  import { ref, onMounted } from 'vue'
+  import { useRoute, useRouter } from 'vue-router'
+  import { adminService } from '@/services/api'
 
-    const route = useRoute()
-    const router = useRouter()
-    const feature = ref({
-        name: '',
-        description: '',
-        classes: [],
-        subclasses: []
-    })
-    const showDeleteModal = ref(false)
+  const route = useRoute()
+  const router = useRouter()
+  const feature = ref({
+    name: '',
+    description: '',
+    classes: [],
+    subclasses: []
+  })
+  const showDeleteModal = ref(false)
 
-    const fetchFeature = async () => {
-        try {
-            const res = await adminService.getFeature(route.params.id)
-            feature.value = res.data
-        } catch (e) {
-            router.push('/features')
-        }
+  const fetchFeature = async () => {
+    try {
+      const res = await adminService.getFeature(route.params.id)
+      feature.value = res.data
+    } catch (e) {
+      router.push('/features')
     }
+  }
 
-    const confirmDelete = async () => {
-        try {
-            await adminService.deleteFeature(route.params.id)
-            showDeleteModal.value = false
-            router.push('/features')
-        } catch (error) {
-            alert('Error al borrar la feature')
-            showDeleteModal.value = false
-        }
+  const confirmDelete = async () => {
+    try {
+      await adminService.deleteFeature(route.params.id)
+      showDeleteModal.value = false
+      router.push('/features')
+    } catch (error) {
+      console.error('Error al borrar la feature', error)
+      showDeleteModal.value = false
     }
+  }
 
-    const editFeature = () => {
-        router.push(`/features/${route.params.id}/edit`)
-    }
+  const editFeature = () => {
+    router.push(`/features/${route.params.id}/edit`)
+  }
 
-    onMounted(fetchFeature)
+  onMounted(fetchFeature)
 </script>
